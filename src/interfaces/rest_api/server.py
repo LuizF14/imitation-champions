@@ -27,11 +27,11 @@ class ModelRestAPI:
             data = request.get_json()
             result = self.service.execute(data["content"], data["sessionId"])
 
-            for part, delay in zip(result.messages, result.delays):
+            for part in result.messages:
                 send_message(
                     session_id=data["sessionId"],
                     content=part,
-                    duration_ms=int(delay * 1000),
+                    duration_ms=int(1000),
                 )
 
             return jsonify({"ok": True})

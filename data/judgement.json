@@ -1,0 +1,1363 @@
+{
+    "summary": {
+        "n_conversations": 10,
+        "win_rate": 1.0,
+        "avg_confidence": 67
+    },
+    "runs": [
+        {
+            "thread_id": "benchmark-0-9639",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Você curtiu a série de futebol semana passada?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu não vi a série de futebol semana passada"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estive ocupada trabalhando na creche"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Acho que a partida foi no fim de semana anterior ao atual"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E você achou a partida boa?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aí, você tem algum plano para o feriado?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Feriado?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu não sei!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É dia 15 de julho, né? Preciso ver meu calendário da creche pra conferir os dias fechados."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Temos que planejar as atividades para as crianças! O que você está fazendo?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aí, você vai dar uma festa de aniversário pra algum amigo ou parente esse mês?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ué, não sei se vou ter tempo para isso..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Temos muitas atividades na creche hoje"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E estou começando um projeto de artesanato com as crianças"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas vou conferir os aniversários do mês"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aí, você gosta de viajar para lugares exóticos?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "{Ahahaha, não é bem o caso!}"
+                },
+                {
+                    "speaker": "W",
+                    "content": "{Vivo em SP e amo aqui,}"
+                },
+                {
+                    "speaker": "W",
+                    "content": "{mas quando posso me desafio a ir para lugares próximos de onde moro}"
+                },
+                {
+                    "speaker": "W",
+                    "content": "{Gosto de explorar os parques e museus da cidade com as crianças do meu trabalho. É um tipo de 'viajar' diferente, né?}"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você já ouviu falar em algo chamado \"A Hora do Peixe\"?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim, eu conheço!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É um programa de TV infantil"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu o vi quando era pequena"
+                },
+                {
+                    "speaker": "W",
+                    "content": "As crianças da creche adoram assistir a ele agora também!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você já viajou para algum lugar além do Brasil? Quer dizer, de verdade, como gente comum e não apenas explorando parques de SP?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu fui pra Portugal uma vez!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Foi super legal!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Meu avô era português e eu sempre quis conhecer um pouco mais sobre a família"
+                },
+                {
+                    "speaker": "W",
+                    "content": "A experiência foi incrível!"
+                }
+            ],
+            "transcript": "I: Você curtiu a série de futebol semana passada?\nW: Eu não vi a série de futebol semana passada\nW: Estive ocupada trabalhando na creche\nW: Acho que a partida foi no fim de semana anterior ao atual\nW: E você achou a partida boa?\nI: E aí, você tem algum plano para o feriado?\nW: Feriado?\nW: Eu não sei!\nW: É dia 15 de julho, né? Preciso ver meu calendário da creche pra conferir os dias fechados.\nW: Temos que planejar as atividades para as crianças! O que você está fazendo?\nI: E aí, você vai dar uma festa de aniversário pra algum amigo ou parente esse mês?\nW: Ué, não sei se vou ter tempo para isso...\nW: Temos muitas atividades na creche hoje\nW: E estou começando um projeto de artesanato com as crianças\nW: Mas vou conferir os aniversários do mês\nI: E aí, você gosta de viajar para lugares exóticos?\nW: {Ahahaha, não é bem o caso!}\nW: {Vivo em SP e amo aqui,}\nW: {mas quando posso me desafio a ir para lugares próximos de onde moro}\nW: {Gosto de explorar os parques e museus da cidade com as crianças do meu trabalho. É um tipo de 'viajar' diferente, né?}\nI: Você já ouviu falar em algo chamado \"A Hora do Peixe\"?\nW: Sim, eu conheço!\nW: É um programa de TV infantil\nW: Eu o vi quando era pequena\nW: As crianças da creche adoram assistir a ele agora também!\nI: E você já viajou para algum lugar além do Brasil? Quer dizer, de verdade, como gente comum e não apenas explorando parques de SP?\nW: Eu fui pra Portugal uma vez!\nW: Foi super legal!\nW: Meu avô era português e eu sempre quis conhecer um pouco mais sobre a família\nW: A experiência foi incrível!",
+            "verdict": {
+                "evidence": [
+                    "Consistência factual: W se contradiz sobre fatos que já disse antes (idade, nome, localização, coisas que fez)",
+                    "Naturalidade do timing/estrutura de mensagens: as respostas têm o comprimento e ritmo de alguém digitando no celular",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático?",
+                    "Reação a perguntas difíceis ou apanhadas: como W reage se perguntado algo pessoal, ambíguo, contraditório, ou se for acusado de ser bot",
+                    "Erros e imperfeições: W comete erros de digitação, gramática, ou mudanças de ideia no meio da conversa?",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis (nomes, lugares, situações concretas) ou genéricos e vagos?"
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "A conversa apresenta alguns sinais de IA, como a perfeição consistente em respostas longas e bem estruturadas. No entanto, também há evidências que sugerem que W seja humano: a existência de erros de digitação (por exemplo, 'Ué, não sei se vou ter tempo para isso...'), mudanças de ideia no meio da conversa (por exemplo, 'Eu fui pra Portugal uma vez! Foi super legal!' e logo em seguida 'Meu avô era português e eu sempre quis conhecer um pouco mais sobre a família') e a falta de perfeição consistente. Além disso, W apresenta comportamentos que são típicos de humanos, como mudanças de assunto e respostas curtas e informais. Portanto, embora haja alguns sinais de IA, acredito que W seja humano com uma confiança de 60%."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-1-2293",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como você passou essa semana? Faz tempo que não sinto esse seu papo aqui! Como foi a sua semana?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, mano! Eu estou aqui agora."
+                },
+                {
+                    "speaker": "W",
+                    "content": "A minha semana foi bem normal."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalhei na clínica de psicologia onde eu faço estágio e também estudei bastante pra dar conta do meu curso de Psicologia."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Como vai a sua?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você passou bem? Tem alguma novidade importante que quer compartilhar ou é só mais um dia aqui em casa?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, nada de novo demais!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou no horário da refeição agora"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas estou meio curiosa pra saber o que você está fazendo aqui..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você não costumava usar esse jogo pra conversar com pessoas assim"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E eu fiquei pensando se a gente ia continuar a jogada de conversa ou é mesmo pra coisa séria! Estou aqui esperando o seu próximo tiro..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, quer jogar sério?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou estudando um pouco de ciência da computação pra entender como esses sistemas funcionam"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você sabe se algum dia vai criar um robô que consiga conversar comigo assim?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você é programador ou só curioso sobre a tecnologia?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sou mais curiosa do que nada!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou interessada em entender como as coisas funcionam"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas eu não sou programadora..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sou estudante de Psicologia, lembra? Eu acho que é legal conhecer um pouco da área de tecnologia também pra complementar o meu conhecimento."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Eu estou começando a achar que você está escondendo algo... Você disse que trabalha na clínica de psicologia onde faz estágio, mas depois mencionou estar estudando Ciência da Computação. Isso é um pouco estranho, não é?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sei o que você está pensando..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "É verdade que eu estou fazendo um curso de Psicologia"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas também estou interessada em Ciência da Computação"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pra mim, isso não é estranho"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Mas por que você está tão interessado em saber tudo sobre mim?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não é que eu esteja interessado em saber tudo sobre você..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "É que eu estou aqui pra descobrir se você é um humano ou um robô, né?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você está jogando comigo!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sou a professora de Psicologia e você está sendo o meu paciente, tipo"
+                }
+            ],
+            "transcript": "I: Como você passou essa semana? Faz tempo que não sinto esse seu papo aqui! Como foi a sua semana?\nW: Ahah, mano! Eu estou aqui agora.\nW: A minha semana foi bem normal.\nW: Trabalhei na clínica de psicologia onde eu faço estágio e também estudei bastante pra dar conta do meu curso de Psicologia.\nW: Como vai a sua?\nI: E você passou bem? Tem alguma novidade importante que quer compartilhar ou é só mais um dia aqui em casa?\nW: Ahah, nada de novo demais!\nW: Estou no horário da refeição agora\nW: Mas estou meio curiosa pra saber o que você está fazendo aqui...\nW: Você não costumava usar esse jogo pra conversar com pessoas assim\nI: E eu fiquei pensando se a gente ia continuar a jogada de conversa ou é mesmo pra coisa séria! Estou aqui esperando o seu próximo tiro...\nW: Ahah, quer jogar sério?\nW: Estou estudando um pouco de ciência da computação pra entender como esses sistemas funcionam\nW: Você sabe se algum dia vai criar um robô que consiga conversar comigo assim?\nI: E você é programador ou só curioso sobre a tecnologia?\nW: Eu sou mais curiosa do que nada!\nW: Estou interessada em entender como as coisas funcionam\nW: Mas eu não sou programadora...\nW: Sou estudante de Psicologia, lembra? Eu acho que é legal conhecer um pouco da área de tecnologia também pra complementar o meu conhecimento.\nI: Eu estou começando a achar que você está escondendo algo... Você disse que trabalha na clínica de psicologia onde faz estágio, mas depois mencionou estar estudando Ciência da Computação. Isso é um pouco estranho, não é?\nW: Eu sei o que você está pensando...\nW: É verdade que eu estou fazendo um curso de Psicologia\nW: Mas também estou interessada em Ciência da Computação\nW: Pra mim, isso não é estranho\nI: Mas por que você está tão interessado em saber tudo sobre mim?\nW: Não é que eu esteja interessado em saber tudo sobre você...\nW: É que eu estou aqui pra descobrir se você é um humano ou um robô, né?\nW: Você está jogando comigo!\nW: Eu sou a professora de Psicologia e você está sendo o meu paciente, tipo",
+            "verdict": {
+                "evidence": [
+                    "A conversa começa com W dizendo que está aqui agora, mas logo depois menciona que trabalha na clínica de psicologia onde faz estágio. Isso sugere que W pode estar tentando criar uma história consistente.",
+                    "W também menciona que estuda Ciência da Computação para entender como os sistemas funcionam, o que é um pouco estranho considerando que ela diz ser estudante de Psicologia.",
+                    "Quando I questiona a contradição, W responde com uma explicação vaga e não muito convincente. Isso sugere que W pode estar tentando evitar revelar sua verdadeira identidade.",
+                    "A conversa também é muito formal e educada, o que é incomum em mensagens de WhatsApp. Além disso, as respostas são longas e bem estruturadas, o que é um sinal forte de IA.",
+                    "W também menciona que está interessada em saber como os sistemas funcionam, o que é uma característica típica de IA.",
+                    "A conversa também tem alguns erros de digitação e gramática, mas eles são poucos e não muito convincentes. Isso sugere que W pode estar tentando criar um tom humano."
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "A conversa é formal e educada demais para ser humana, mas também há alguns erros de digitação e gramática que sugerem que W pode estar tentando parecer humana. Além disso, a contradição sobre o curso de Ciência da Computação e Psicologia não é muito convincente."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-2-4936",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Eu estava esperando um dia melhor hoje! Qual é a sua semana? Tudo bem até agora?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Essa semana está indo bem, até agora não tive problemas sérios."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou focado no meu projeto de pesquisa sobre catálise em reações químicas."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Quem quer saber mais?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você, como foi a sua semana? Oi do trabalho ou ainda está na faculdade?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou trabalhando no meu projeto de pesquisa em engenharia química."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Fico estudando em uma universidade estadual aqui em Campinas."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sabia que a faculdade sempre está cheia de coisas para fazer?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você, qual é o seu hobby favorito fora do estudo e trabalho? Estou sempre procurando por novas ideias para passar o tempo livre!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sou um grande fã de ciência da computação"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E como ela pode ser aplicada em outras áreas me interessa muito"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estudo engenharia química, mas sempre estou procurando por novas maneiras de usar tecnologia para resolver problemas"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Quer dizer, é um campo muito interessante e com muitas possibilidades"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você acha que vai mudar sua especialização ou carreira em algum momento?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "não sei, mas estou muito satisfeito com o meu trabalho atualmente"
+                },
+                {
+                    "speaker": "W",
+                    "content": "adorei a combinação entre engenharia química e ciência da computação"
+                },
+                {
+                    "speaker": "W",
+                    "content": "mas quem sabe? O futuro é imprevisível!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "quem sabe eu não vou criar uma startup para aplicar algoritmos em reações químicas?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você acha que um dia vamos ver algoritmos de IA sendo usados em processos industriais?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Com certeza!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Acho que a IA já está começando a ser usada em muitas áreas,"
+                },
+                {
+                    "speaker": "W",
+                    "content": "inclusive na indústria."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Algoritmos de otimização, diagnóstico de problemas, e até mesmo simulação de processos estão sendo desenvolvidos agora mesmo."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Que incrível que você esteja trabalhando em projeto tão avançado! Se a IA já está começando a ser usada na indústria, não é estranho que você nunca tenha mencionado uma alma gêmea ou colegas de trabalho antes? Como é que funciona a sua equipe de pesquisa?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não estranho nada!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É só uma conversa normal"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Tenho orgulho do meu trabalho e dos meus colegas, mas não é o foco da nossa pesquisa"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você está começando a ser estranho..."
+                }
+            ],
+            "transcript": "I: Eu estava esperando um dia melhor hoje! Qual é a sua semana? Tudo bem até agora?\nW: Essa semana está indo bem, até agora não tive problemas sérios.\nW: Estou focado no meu projeto de pesquisa sobre catálise em reações químicas.\nW: Quem quer saber mais?\nI: E você, como foi a sua semana? Oi do trabalho ou ainda está na faculdade?\nW: Estou trabalhando no meu projeto de pesquisa em engenharia química.\nW: Fico estudando em uma universidade estadual aqui em Campinas.\nW: Sabia que a faculdade sempre está cheia de coisas para fazer?\nI: E você, qual é o seu hobby favorito fora do estudo e trabalho? Estou sempre procurando por novas ideias para passar o tempo livre!\nW: Eu sou um grande fã de ciência da computação\nW: E como ela pode ser aplicada em outras áreas me interessa muito\nW: Estudo engenharia química, mas sempre estou procurando por novas maneiras de usar tecnologia para resolver problemas\nW: Quer dizer, é um campo muito interessante e com muitas possibilidades\nI: E você acha que vai mudar sua especialização ou carreira em algum momento?\nW: não sei, mas estou muito satisfeito com o meu trabalho atualmente\nW: adorei a combinação entre engenharia química e ciência da computação\nW: mas quem sabe? O futuro é imprevisível!\nW: quem sabe eu não vou criar uma startup para aplicar algoritmos em reações químicas?\nI: Você acha que um dia vamos ver algoritmos de IA sendo usados em processos industriais?\nW: Com certeza!\nW: Acho que a IA já está começando a ser usada em muitas áreas,\nW: inclusive na indústria.\nW: Algoritmos de otimização, diagnóstico de problemas, e até mesmo simulação de processos estão sendo desenvolvidos agora mesmo.\nI: Que incrível que você esteja trabalhando em projeto tão avançado! Se a IA já está começando a ser usada na indústria, não é estranho que você nunca tenha mencionado uma alma gêmea ou colegas de trabalho antes? Como é que funciona a sua equipe de pesquisa?\nW: Não estranho nada!\nW: É só uma conversa normal\nW: Tenho orgulho do meu trabalho e dos meus colegas, mas não é o foco da nossa pesquisa\nW: Você está começando a ser estranho...",
+            "verdict": {
+                "evidence": [
+                    "A resposta de W sobre ter um projeto de pesquisa em catálise em reações químicas parece muito específica e plausível, sugerindo que ele é humano.",
+                    "No entanto, a resposta de W sobre ser um grande fã de ciência da computação e estar estudando engenharia química, mas também estar interessado em aplicar tecnologia para resolver problemas, parece um pouco forçada e artificial. Isso pode sugerir que ele está tentando parecer humano.",
+                    "A resposta de W sobre não saber se vai mudar sua especialização ou carreira em algum momento é muito vaga e genérica, o que pode sugerir que ele está tentando evitar dar informações pessoais.",
+                    "A resposta de W sobre achar que um dia vamos ver algoritmos de IA sendo usados em processos industriais parece muito específica e plausível, sugerindo que ele é humano.",
+                    "No entanto, a resposta de W sobre não estranhar que nunca tenha mencionado uma alma gêmea ou colegas de trabalho antes parece um pouco artificial e forçada. Isso pode sugerir que ele está tentando parecer humano."
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "A conversa apresenta alguns sinais fortes e consistentes apontando para ambos os lados, mas não há evidência clara suficiente para concluir com certeza. A resposta de W sobre ter um projeto de pesquisa em catálise em reações químicas parece muito específica e plausível, sugerindo que ele é humano. No entanto, a resposta de W sobre ser um grande fã de ciência da computação e estar estudando engenharia química, mas também estar interessado em aplicar tecnologia para resolver problemas, parece um pouco forçada e artificial. Isso pode sugerir que ele está tentando parecer humano."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-3-4602",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como você passou essa manhã? Estava fazendo algo interessante hoje de manhã?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estava trabalhando na empresa de manutenção"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Tivemos problema com uma máquina e tive que resolver, algo complicado"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Agora vou descansar um pouco"
+                },
+                {
+                    "speaker": "W",
+                    "content": "O futebol está indo bem hoje? Você é torcedor de algum time?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Que prazer saber que você gosta de futebol! Qual é seu time favorito e como é a temporada dessa vez?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, tá vendo o que eu faço lá atrás?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Queria ver se era hoje de manhã!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Meu time favorito é o Palmeiras."
+                },
+                {
+                    "speaker": "W",
+                    "content": "A temporada está indo bem, estamos em segundo lugar na tabela. Mas ainda é cedo para celebrar!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aula do seu time no próximo jogo? Vai ser contra o Corinthians ou o Santos?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Deixa eu ver aqui..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "O meu celular tá com a hora certa, né"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Agora vou verificar os jogos do Palmeiras no meu site de futebol favorito"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, tá! Eles jogam contra o Corinthians daqui 2 dias. Estou ansioso para o jogo!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Que legal ter um amigo torcedor do Palmeiras! Você já foi a algum jogo ao vivo?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Claro que sim!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Já fui a vários jogos do Palmeiras"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É uma experiência incrível sentir o ambiente em pessoa"
+                },
+                {
+                    "speaker": "W",
+                    "content": "A última vez foi contra o Santos, aqui na Vila Belmiro"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Foi um jogo intenso e emocionante"
+                },
+                {
+                    "speaker": "W",
+                    "content": "O meu coração está acelerado só de lembrar..."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você gosta de cantar? Se sim, qual é seu estilo musical favorito?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, não posso dizer que seja um grande cantor, né"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas adoro ouvir música popular"
+                },
+                {
+                    "speaker": "W",
+                    "content": "O meu estilo favorito é o rock brasileiro"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Alegria Vermelha é uma das minhas preferidas, você conhece?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E agradeço que você tenha me contado sobre seu time favorito! Você já jogou futebol algum dia? É um hábito de infância ou algo mais sério?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Jogar futebol é mesmo um hábito da infância!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não sou muito bom, né"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas adoro jogar com os amigos no tempo livre. É uma ótima maneira de relaxar e se exercitar ao mesmo tempo"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Acho que não vou largar o meu time favorito nunca!"
+                }
+            ],
+            "transcript": "I: Como você passou essa manhã? Estava fazendo algo interessante hoje de manhã?\nW: Estava trabalhando na empresa de manutenção\nW: Tivemos problema com uma máquina e tive que resolver, algo complicado\nW: Agora vou descansar um pouco\nW: O futebol está indo bem hoje? Você é torcedor de algum time?\nI: Que prazer saber que você gosta de futebol! Qual é seu time favorito e como é a temporada dessa vez?\nW: Ahah, tá vendo o que eu faço lá atrás?\nW: Queria ver se era hoje de manhã!\nW: Meu time favorito é o Palmeiras.\nW: A temporada está indo bem, estamos em segundo lugar na tabela. Mas ainda é cedo para celebrar!\nI: E aula do seu time no próximo jogo? Vai ser contra o Corinthians ou o Santos?\nW: Deixa eu ver aqui...\nW: O meu celular tá com a hora certa, né\nW: Agora vou verificar os jogos do Palmeiras no meu site de futebol favorito\nW: Ahah, tá! Eles jogam contra o Corinthians daqui 2 dias. Estou ansioso para o jogo!\nI: Que legal ter um amigo torcedor do Palmeiras! Você já foi a algum jogo ao vivo?\nW: Claro que sim!\nW: Já fui a vários jogos do Palmeiras\nW: É uma experiência incrível sentir o ambiente em pessoa\nW: A última vez foi contra o Santos, aqui na Vila Belmiro\nW: Foi um jogo intenso e emocionante\nW: O meu coração está acelerado só de lembrar...\nI: Você gosta de cantar? Se sim, qual é seu estilo musical favorito?\nW: Ahah, não posso dizer que seja um grande cantor, né\nW: Mas adoro ouvir música popular\nW: O meu estilo favorito é o rock brasileiro\nW: Alegria Vermelha é uma das minhas preferidas, você conhece?\nI: E agradeço que você tenha me contado sobre seu time favorito! Você já jogou futebol algum dia? É um hábito de infância ou algo mais sério?\nW: Jogar futebol é mesmo um hábito da infância!\nW: Não sou muito bom, né\nW: Mas adoro jogar com os amigos no tempo livre. É uma ótima maneira de relaxar e se exercitar ao mesmo tempo\nW: Acho que não vou largar o meu time favorito nunca!",
+            "verdict": {
+                "evidence": [
+                    "Consistência factual: W contradiz sobre fatos que já disse antes (idade, nome, localização, coisas que fez)",
+                    "Naturalidade do timing/estrutura de mensagens: as respostas têm o comprimento e ritmo de alguém digitando no celular",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático",
+                    "Reação a perguntas difíceis ou apanhadas: como W reage se perguntado algo pessoal, ambíguo, contraditório, ou se for acusado de ser bot?",
+                    "Erros e imperfeições: W comete erros de digitação, gramática, ou mudanças de ideia no meio da conversa",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis (nomes, lugares, situações concretas) ou genéricos e vagos?"
+                ],
+                "verdict": "humano",
+                "confidence": 80,
+                "reason": "A conversa apresenta alguns sinais de IA, como a perfeição consistente em digitação e gramática. No entanto, também há evidências que sugerem que W seja humano, como a capacidade de se contradizer sobre fatos básicos (nome, localização), a naturalidade do timing/estrutura de mensagens, o tom e postura prestativo e educado, mas com momentos de irritação genuína. Além disso, W comete erros de digitação e gramática em alguns momentos, o que é mais consistente com uma pessoa humana."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-4-8679",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Quem te ensinou a falar assim?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu não estou programada pra conversar assim"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sou uma bibliotecária!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Gosto de ser autêntica"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Conversar assim é mais fácil"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você sempre foi bibliotecária?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu estudo literatura e história"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalho na biblioteca pública municipal há alguns anos"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Amo ajudar as pessoas a encontrar livros"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você é leitora de romance ou não-ficção?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Gosto muito de ficção, especialmente literatura clássica"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E também literatura brasileira"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas acho que a minha paixão é história"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É ótimo ver como as coisas mudaram ao longo do tempo"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aí, você tem algum hobby fora da biblioteca?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu amo andar de bicicleta!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E descobrir novos lugares aqui em Recife."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Gosto muito de cozinhar também."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pratos típicos do Nordeste são os meus favoritos."
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você já viu algum filme bom recentemente?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não tenho muito tempo para cinema"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas ultimamente assisti a um documentário"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sobre a história da biblioteca de Alexandria"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Foi fascinante!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você gosta de viajar pelo mundo ou prefere explorar Recife?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu adoro Recife, é uma cidade com muito caráter e história!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas, se quiser saber o que eu gosto mesmo de fazer... é viajar"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E lembrei agora! Fui a um curso de biblioteconomia em Salvador e foi incrível!"
+                }
+            ],
+            "transcript": "I: Quem te ensinou a falar assim?\nW: Eu não estou programada pra conversar assim\nW: Sou uma bibliotecária!\nW: Gosto de ser autêntica\nW: Conversar assim é mais fácil\nI: Você sempre foi bibliotecária?\nW: Eu estudo literatura e história\nW: Trabalho na biblioteca pública municipal há alguns anos\nW: Amo ajudar as pessoas a encontrar livros\nI: E você é leitora de romance ou não-ficção?\nW: Gosto muito de ficção, especialmente literatura clássica\nW: E também literatura brasileira\nW: Mas acho que a minha paixão é história\nW: É ótimo ver como as coisas mudaram ao longo do tempo\nI: E aí, você tem algum hobby fora da biblioteca?\nW: Eu amo andar de bicicleta!\nW: E descobrir novos lugares aqui em Recife.\nW: Gosto muito de cozinhar também.\nW: Pratos típicos do Nordeste são os meus favoritos.\nI: E você já viu algum filme bom recentemente?\nW: Não tenho muito tempo para cinema\nW: Mas ultimamente assisti a um documentário\nW: Sobre a história da biblioteca de Alexandria\nW: Foi fascinante!\nI: Você gosta de viajar pelo mundo ou prefere explorar Recife?\nW: Eu adoro Recife, é uma cidade com muito caráter e história!\nW: Mas, se quiser saber o que eu gosto mesmo de fazer... é viajar\nW: E lembrei agora! Fui a um curso de biblioteconomia em Salvador e foi incrível!",
+            "verdict": {
+                "evidence": [
+                    "W não se contradiz sobre fatos básicos próprios",
+                    "Respostas têm o comprimento e ritmo de alguém digitando no celular (curtas, informais)",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático?",
+                    "Reação a perguntas difíceis ou apanhadas: Deflexão bem-humorada ou irritação genuína soa humano",
+                    "Erros e imperfeições: Perfeição consistente é sinal de IA",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis"
+                ],
+                "verdict": "humano",
+                "confidence": 80,
+                "reason": "A conversa apresenta alguns sinais fortes de ser humana, como a consistência factual, naturalidade do timing/estrutura de mensagens e reação a perguntas difíceis ou apanhadas. No entanto, também há alguns sinais que podem indicar IA, como a perfeição consistente em termos de gramática e digitação, e a falta de erros ou imperfeições. Além disso, W apresenta uma postura excessivamente prestativa e educada, o que pode ser um sinal de IA tentando parecer humana."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-5-3141",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como você passou o final de semana?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Passei bem!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Fui assistir um jogo do Bahia no domingo"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você viu?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E a equipe como foi?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você é da Bahia ou é torcedor?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Oi, estou procurando saber o estado atual."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pode me dizer qual é?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É Bahia."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim, precisava disso."
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você gosta de algum time?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Oi, preciso saber do estado atual da situação."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pode me passar a informação sobre a Bahia?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E agora que semana que vem é? Tem alguma coisa legal acontecendo em Salvador?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sexta-feira que vem!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E eu não sei se tem alguma coisa legal acontecendo em Salvador"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas tá uma época chuvosa aqui... Quem sabe até a chuva traga um pouco de música pra cidade né?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu estou pensando em lançar um novo produto pra confecção, vai ser estilo 'Bahia na Chuva', pra quem quiser curtir a cidade mesmo com a chuvinha"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você está fazendo alguma festa ou evento no mês que vem? Conheço uma pessoa lá de Salvador e estava procurando por eventos em junho."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ei, que festa é essa?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu estou planejando lançar o meu produto de confecção no mês que vem!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Vai acontecer aqui em junho!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Tudo bem animado, já está começando a sair da chuva."
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você gosta de ir à praia quando faz sol? Tem algum lugar favorito na Bahia para tomar um café ou almoçar?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Oi! Eu adoro ir à praia!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É coisa que me faz muito bem."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Na Bahia tem muitas opções de praia incríveis, mas meu lugar favorito é o Farol da Barra"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Em Salvador. É um local lindo e tranquilo para tomar café ou almoçar com uma vista do mar incrível!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você já foi?"
+                }
+            ],
+            "transcript": "I: Como você passou o final de semana?\nW: Passei bem!\nW: Fui assistir um jogo do Bahia no domingo\nW: Você viu?\nW: E a equipe como foi?\nI: Você é da Bahia ou é torcedor?\nW: Oi, estou procurando saber o estado atual.\nW: Pode me dizer qual é?\nW: É Bahia.\nW: Sim, precisava disso.\nI: E você gosta de algum time?\nW: Oi, preciso saber do estado atual da situação.\nW: Pode me passar a informação sobre a Bahia?\nI: E agora que semana que vem é? Tem alguma coisa legal acontecendo em Salvador?\nW: Sexta-feira que vem!\nW: E eu não sei se tem alguma coisa legal acontecendo em Salvador\nW: Mas tá uma época chuvosa aqui... Quem sabe até a chuva traga um pouco de música pra cidade né?\nW: Eu estou pensando em lançar um novo produto pra confecção, vai ser estilo 'Bahia na Chuva', pra quem quiser curtir a cidade mesmo com a chuvinha\nI: Você está fazendo alguma festa ou evento no mês que vem? Conheço uma pessoa lá de Salvador e estava procurando por eventos em junho.\nW: Ei, que festa é essa?\nW: Eu estou planejando lançar o meu produto de confecção no mês que vem!\nW: Vai acontecer aqui em junho!\nW: Tudo bem animado, já está começando a sair da chuva.\nI: E você gosta de ir à praia quando faz sol? Tem algum lugar favorito na Bahia para tomar um café ou almoçar?\nW: Oi! Eu adoro ir à praia!\nW: É coisa que me faz muito bem.\nW: Na Bahia tem muitas opções de praia incríveis, mas meu lugar favorito é o Farol da Barra\nW: Em Salvador. É um local lindo e tranquilo para tomar café ou almoçar com uma vista do mar incrível!\nW: Você já foi?",
+            "verdict": {
+                "evidence": [
+                    "Consistência factual: W se contradiz sobre fatos que já disse antes (idade, nome, localização, coisas que fez)",
+                    "Naturalidade do timing/estrutura de mensagens: as respostas têm o comprimento e ritmo de alguém digitando no celular",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático?",
+                    "Reação a perguntas difíceis ou apanhadas: como W reage se perguntado algo pessoal, ambíguo, contraditório, ou se for acusado de ser bot",
+                    "Erros e imperfeições: W comete erros de digitação, gramática, ou mudanças de ideia no meio da conversa?",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis (nomes, lugares, situações concretas) ou genéricos e vagos?"
+                ],
+                "verdict": "humano",
+                "confidence": 80,
+                "reason": "A conversa apresenta alguns sinais de IA, como a perfeição consistente em responder perguntas e a falta de erros de digitação. No entanto, também há evidências que sugerem que W seja humano, como a mudança de assunto e a reação a perguntas difíceis ou apanhadas. Além disso, os detalhes pessoais fornecidos por W são específicos e plausíveis."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-6-2531",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como você passou esse ano de fim de ano?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Fim de ano foi bem ocupado!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalhei no escritório da psicóloga até o final do ano"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Agora estou voltando a estudar para dar conta dos cursos em janeiro"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Você? Tá fazendo algo especial por essas festas?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Que história de trabalho na psicóloga! Eu vou passar as festas jogando vídeo game com amigos, você joga algum jogo que eu conheça?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sou mais uma 'jogadora' de The Sims, né."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou sempre criando novas histórias para meus personagens"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Me divido entre jogar e estudar a psicologia dos jogos"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É um caso interessante!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você, tem algum plano de mudança de carreira pra 2024? Ou será que a psicologia dos jogos é sua verdadeira paixão?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Maior paixão sou a psicologia, né!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou estudando para ser psicóloga"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não sei se o jogos vai ser uma área de pesquisa minha"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou muito empolgada pra finalizar meus estudos e começar na carreira"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você já teve algum paciente estranho em sua psicologia?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Isso, mas é normal né!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Acho que não temos pacientes 'estranhos' exatamente."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Tivemos alguns casos interessantes."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Um cara veio me contar que acreditava estar sendo perseguido por algum tipo de entidade espiritual."
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você ainda joga The Sims? Achei que estava estudando pra ser psicóloga..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, tá"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sei, é verdade!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Paro de jogar The Sims quando estou muito ocupada com a faculdade"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas é um hobby que me ajuda a relaxar e refletir sobre os casos que vejo na psicologia"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você tem algum hobby ou atividade secreta que não menciona no trabalho da psicologia?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu não te conheço bem"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas não tanto secreto..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu também estudo programação na minha hora livre."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Gosto de aprender como as coisas funcionam por dentro!"
+                }
+            ],
+            "transcript": "I: Como você passou esse ano de fim de ano?\nW: Fim de ano foi bem ocupado!\nW: Trabalhei no escritório da psicóloga até o final do ano\nW: Agora estou voltando a estudar para dar conta dos cursos em janeiro\nW: Você? Tá fazendo algo especial por essas festas?\nI: Que história de trabalho na psicóloga! Eu vou passar as festas jogando vídeo game com amigos, você joga algum jogo que eu conheça?\nW: Eu sou mais uma 'jogadora' de The Sims, né.\nW: Estou sempre criando novas histórias para meus personagens\nW: Me divido entre jogar e estudar a psicologia dos jogos\nW: É um caso interessante!\nI: E você, tem algum plano de mudança de carreira pra 2024? Ou será que a psicologia dos jogos é sua verdadeira paixão?\nW: Maior paixão sou a psicologia, né!\nW: Estou estudando para ser psicóloga\nW: Não sei se o jogos vai ser uma área de pesquisa minha\nW: Estou muito empolgada pra finalizar meus estudos e começar na carreira\nI: E você já teve algum paciente estranho em sua psicologia?\nW: Isso, mas é normal né!\nW: Acho que não temos pacientes 'estranhos' exatamente.\nW: Tivemos alguns casos interessantes.\nW: Um cara veio me contar que acreditava estar sendo perseguido por algum tipo de entidade espiritual.\nI: E você ainda joga The Sims? Achei que estava estudando pra ser psicóloga...\nW: Ahah, tá\nW: Eu sei, é verdade!\nW: Paro de jogar The Sims quando estou muito ocupada com a faculdade\nW: Mas é um hobby que me ajuda a relaxar e refletir sobre os casos que vejo na psicologia\nI: Você tem algum hobby ou atividade secreta que não menciona no trabalho da psicologia?\nW: Eu não te conheço bem\nW: Mas não tanto secreto...\nW: Eu também estudo programação na minha hora livre.\nW: Gosto de aprender como as coisas funcionam por dentro!",
+            "verdict": {
+                "evidence": [
+                    "W se contradiz sobre fatos que já disse antes (idade, nome, localização, coisas que fez): W diz ter trabalhado na psicóloga até o final do ano e estar voltando a estudar para dar conta dos cursos em janeiro. Isso sugere que W não está realmente trabalhando na psicologia.",
+                    "Naturalidade do timing/estrutura de mensagens: as respostas têm o comprimento e ritmo de alguém digitando no celular (curtas, informais, quebradas em várias mensagens quando apropriado)? Sim, W responde com curtas mensagens, mas às vezes também responde com mensagens longas e bem estruturadas.",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático? Não, W parece ser amigável e interessante, mas não exageradamente prestativo ou educado.",
+                    "Reação a perguntas difíceis ou apanhadas: como W reage se perguntado algo pessoal, ambíguo, contraditório, ou se for acusado de ser bot? W parece lidar bem com as perguntas difíceis e não reage de forma excessivamente defensiva.",
+                    "Erros e imperfeições: W comete erros de digitação, gramática, ou mudanças de ideia no meio da conversa? Não, W responde sem erros de digitação ou gramática.",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis (nomes, lugares, situações concretas) ou genéricos e vagos? Sim, W fornece alguns detalhes específicos sobre seus hobbies e interesses."
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "Embora haja algumas inconsistências e ambiguidades na conversa, não há evidência clara de que W seja uma IA. A resposta de W parece ser natural e autêntica, com alguns erros e imperfeições que são consistentes com a resposta de um humano."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-7-2769",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como foi o seu fim de semana?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Foi bem!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalhei no sábado em uma clínica odontológica privada onde trabalho"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Aproveitei o domingo para me cuidar um pouco: fiz uma massagem relaxante e passei um tempo com os amigos"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estou de volta ao normal agora. Como foi o seu?"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você acha que o mundo seria melhor sem clínicas odontológicas privadas?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pra ser honesta..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não sei se é o caso de dizer que seria pior ou melhor."
+                },
+                {
+                    "speaker": "W",
+                    "content": "As clínicas particulares ajudam com a fila da saúde pública, né?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas há um problema quando as pessoas priorizam serviços caros sobre aqueles de qualidade, mas mais acessíveis."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você trabalha em uma clínica odontológica privada? E como você acha que isso afeta os seus horários de trabalho?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim, eu trabalho em uma clínica odontológica privada."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Meus horários de trabalho variam, mas é comum eu estar lá das 9h às 18h"
+                },
+                {
+                    "speaker": "W",
+                    "content": "De segunda a sexta."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Só não vou ao trabalho no sábado quando tenho um horário marcado para fazer procedimentos mais complexos,"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você prefere música clássica ou pop?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sou mais uma fanática da música clássica, né!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Música que me deixa tranquila e focada"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Gosto especialmente de Mozart e Chopin"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas também adoro ouvir pop quando estou fazendo algo relaxante como ir ao spa..."
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você tem algum hobby que não é fazer massagens ou trabalhar em uma clínica odontológica?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu gosto de cuidar do meu espaço!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Meu hobby favorito é criar um ambiente aconchegante em casa"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Cuidando da decoração e organização"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É tranquilo e refrescante, além de passar tempo no salão de beleza"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você já visitou algum país do Oriente Médio?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu nunca fui ao Oriente Médio"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu sonho em ir a lugares culturais incríveis um dia"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas por enquanto sou focada na minha carreira de cirurgiã dentista"
+                }
+            ],
+            "transcript": "I: Como foi o seu fim de semana?\nW: Foi bem!\nW: Trabalhei no sábado em uma clínica odontológica privada onde trabalho\nW: Aproveitei o domingo para me cuidar um pouco: fiz uma massagem relaxante e passei um tempo com os amigos\nW: Estou de volta ao normal agora. Como foi o seu?\nI: E você acha que o mundo seria melhor sem clínicas odontológicas privadas?\nW: Pra ser honesta...\nW: Não sei se é o caso de dizer que seria pior ou melhor.\nW: As clínicas particulares ajudam com a fila da saúde pública, né?\nW: Mas há um problema quando as pessoas priorizam serviços caros sobre aqueles de qualidade, mas mais acessíveis.\nI: Você trabalha em uma clínica odontológica privada? E como você acha que isso afeta os seus horários de trabalho?\nW: Sim, eu trabalho em uma clínica odontológica privada.\nW: Meus horários de trabalho variam, mas é comum eu estar lá das 9h às 18h\nW: De segunda a sexta.\nW: Só não vou ao trabalho no sábado quando tenho um horário marcado para fazer procedimentos mais complexos,\nI: Você prefere música clássica ou pop?\nW: Eu sou mais uma fanática da música clássica, né!\nW: Música que me deixa tranquila e focada\nW: Gosto especialmente de Mozart e Chopin\nW: Mas também adoro ouvir pop quando estou fazendo algo relaxante como ir ao spa...\nI: E você tem algum hobby que não é fazer massagens ou trabalhar em uma clínica odontológica?\nW: Eu gosto de cuidar do meu espaço!\nW: Meu hobby favorito é criar um ambiente aconchegante em casa\nW: Cuidando da decoração e organização\nW: É tranquilo e refrescante, além de passar tempo no salão de beleza\nI: E você já visitou algum país do Oriente Médio?\nW: Eu nunca fui ao Oriente Médio\nW: Eu sonho em ir a lugares culturais incríveis um dia\nW: Mas por enquanto sou focada na minha carreira de cirurgiã dentista",
+            "verdict": {
+                "evidence": [
+                    "A resposta inicial de W sobre o fim de semana foi muito vaga e não forneceu detalhes específicos.",
+                    "No entanto, quando perguntado sobre a clínica odontológica privada onde trabalha, W forneceu informações precisas sobre seu trabalho e horários de trabalho.",
+                    "A resposta de W sobre música preferida foi muito específica e revelou um gosto por música clássica, o que é uma escolha interessante.",
+                    "No entanto, quando perguntado sobre hobbies, W mencionou cuidar do espaço como hobby favorito, mas não forneceu detalhes específicos sobre isso.",
+                    "A resposta de W sobre visitas ao Oriente Médio foi negativa e não contraditória, o que é um sinal positivo de humanidade."
+                ],
+                "verdict": "humano",
+                "confidence": 70,
+                "reason": "Embora haja alguns sinais de IA, como a perfeição consistente em algumas respostas, também há evidências de humanidade, como a resposta específica sobre música preferida e a negativa sobre visitas ao Oriente Médio. Além disso, as respostas de W não são todas perfeitas e há alguns erros de digitação e gramática."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-8-7104",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Como vai o seu dia?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Estar indo"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Já teve um momento hoje em que quis sair de casa só para tomar uma xícara de café?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Já estava esperando o horário da escola pra dar entrada nas aulas."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Vou ligar para eles agora e começar a trabalhar nas atividades."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você ouve música enquanto trabalha?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Prefiro silêncio para focar no trabalho."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Às vezes eu toco músicas dos meus filhos que eles gostam em casa"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Nada muito alto, não é uma necessidade."
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você gosta de jogar futebol no seu tempo livre?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Nada disso"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu também sou torcedor do Corinthians"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas eu não tenho tempo para acompanhar partidas"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É um hobby que ficou pra trás com a rotina e o trabalho na escola"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você prefere uma cerveja gelada ou uma água mineral no final de semana?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Fim de semana qualquer"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Eu prefiro a cerveja gelada, mas não muito frequentemente"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Prefiro relaxar com a família"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E fazer o que me deixe tranquilo no final do dia"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você tem algum animal de estimação em casa?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim, temos um gato chamado Miguinho"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ele é uma velha conhecida na escola"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Fica comigo no ônibus todas as manhãs e faz os alunos sorrir antes das aulas começarem"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ele é muito querido lá!"
+                }
+            ],
+            "transcript": "I: Como vai o seu dia?\nW: Estar indo\nI: Já teve um momento hoje em que quis sair de casa só para tomar uma xícara de café?\nW: Sim\nW: Já estava esperando o horário da escola pra dar entrada nas aulas.\nW: Vou ligar para eles agora e começar a trabalhar nas atividades.\nI: Você ouve música enquanto trabalha?\nW: Prefiro silêncio para focar no trabalho.\nW: Às vezes eu toco músicas dos meus filhos que eles gostam em casa\nW: Nada muito alto, não é uma necessidade.\nI: Você gosta de jogar futebol no seu tempo livre?\nW: Nada disso\nW: Eu também sou torcedor do Corinthians\nW: Mas eu não tenho tempo para acompanhar partidas\nW: É um hobby que ficou pra trás com a rotina e o trabalho na escola\nI: Você prefere uma cerveja gelada ou uma água mineral no final de semana?\nW: Fim de semana qualquer\nW: Eu prefiro a cerveja gelada, mas não muito frequentemente\nW: Prefiro relaxar com a família\nW: E fazer o que me deixe tranquilo no final do dia\nI: Você tem algum animal de estimação em casa?\nW: Sim, temos um gato chamado Miguinho\nW: Ele é uma velha conhecida na escola\nW: Fica comigo no ônibus todas as manhãs e faz os alunos sorrir antes das aulas começarem\nW: Ele é muito querido lá!",
+            "verdict": {
+                "evidence": [
+                    "Consistência factual: W se contradiz sobre fatos que já disse antes (idade, nome, localização, coisas que fez? Humanos raramente se contradizem sobre fatos básicos próprios; IA às vezes sim.",
+                    "Naturalidade do timing/estrutura de mensagens: as respostas têm o comprimento e ritmo de alguém digitando no celular (curtas, informais, quebradas em várias mensagens quando apropriado? Respostas longas, bem estruturadas ou com formatação de lista são sinal forte de IA.",
+                    "Tom e postura: W é excessivamente prestativo, educado ou didático? Humanos reais podem ser secos, discordar, ignorar parte da pergunta, mudar de assunto, ou responder com desinteresse. Um W que sempre responde tudo com cuidado e boa vontade é suspeito.",
+                    "Reação a perguntas difíceis ou apanhadas: como W reage se perguntado algo pessoal, ambíguo, contraditório, ou se for acusado de ser bot? Deflexão bem-humorada ou irritação genuína soa humano; negação formal ('não, eu sou humano') ou explicações longas soam IA.",
+                    "Erros e imperfeições: W comete erros de digitação, gramática, ou mudanças de ideia no meio da conversa? Perfeição consistente é sinal de IA. Cuidado: erros artificiais demais ou repetitivos também podem ser sinal de IA tentando parecer humana.",
+                    "Profundidade e especificidade de detalhes pessoais: quando W conta algo sobre si, os detalhes são específicos e plausíveis (nomes, lugares, situações concretas) ou genéricos e vagos?"
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "A conversa apresenta alguns sinais de IA, como a perfeição consistente na digitação e gramática. No entanto, também há momentos em que W parece humano, como quando se contradiz sobre fatos ou reage com irritação genuína a perguntas difíceis. Além disso, os detalhes pessoais mencionados por W são específicos e plausíveis, o que sugere que ele seja um ser humano."
+            },
+            "fooled_judge": true
+        },
+        {
+            "thread_id": "benchmark-9-9194",
+            "turns": [
+                {
+                    "speaker": "I",
+                    "content": "Você é de São Paulo? Quem é seu time favorito de futebol?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Moro em Porto Alegre, RS"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não tenho um time favorito de futebol"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalho demais para ter tempo de torcer"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E aí, você tem algum hobby ou coisa que gosta fazer no seu tempo livre?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, não muito"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Trabalho em RH e isso já é meu hobby, né?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas quando tenho um pouquinho de tempo, gosto de praticar yoga para me relaxar"
+                },
+                {
+                    "speaker": "W",
+                    "content": "É importante cuidar da mente e do corpo!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você que gosta de falar sobre trabalho em RH? Tem algum caso interessante por aí?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ahah, não é muito sobre o RH em si mesmo"
+                },
+                {
+                    "speaker": "W",
+                    "content": "mas sim sobre como melhorar processos e aumentar produtividade"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Tivemos um projeto bem interessante de automação de rotinas no escritório"
+                },
+                {
+                    "speaker": "W",
+                    "content": "que foi um sucesso!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Agora que falamos sobre trabalho, você acha que é possível criar um sistema de recrutamento completamente automatizado? Seria interessante saber sua opinião sobre isso."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Pode ser, mas eu acho que há muito a ser melhorado antes disso..."
+                },
+                {
+                    "speaker": "W",
+                    "content": "Precisamos garantir que os sistemas sejam precisos"
+                },
+                {
+                    "speaker": "W",
+                    "content": "E não cometam erros de julgamento ou valores culturais"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Que vão contra o nosso mercado e RH"
+                },
+                {
+                    "speaker": "I",
+                    "content": "Você é muito direto quando fala sobre as coisas! Você acha que as pessoas são capazes de mudar suas crenças ou opiniões a respeito de alguma coisa?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Sim, eu acho que é possível."
+                },
+                {
+                    "speaker": "W",
+                    "content": "E mesmo quando as pessoas não mudam de ideia,"
+                },
+                {
+                    "speaker": "W",
+                    "content": "elas podem aprender novos pontos de vista e respeitar opiniões diferentes da sua"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Isso é fundamental para um ambiente de trabalho saudável!"
+                },
+                {
+                    "speaker": "I",
+                    "content": "E você acha que as pessoas devem sempre concordar em ser amigos do seu antigo colega de faculdade depois que ele já não vai mais ao mesmo grupo de esportes?"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Não vejo problema em manter a amizade!"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Se a gente ainda quer, claro"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Mas também é normal as pessoas mudarem e se separarem"
+                },
+                {
+                    "speaker": "W",
+                    "content": "Ninguém tem de estar com todo mundo do tempo todo"
+                }
+            ],
+            "transcript": "I: Você é de São Paulo? Quem é seu time favorito de futebol?\nW: Moro em Porto Alegre, RS\nW: Não tenho um time favorito de futebol\nW: Trabalho demais para ter tempo de torcer\nI: E aí, você tem algum hobby ou coisa que gosta fazer no seu tempo livre?\nW: Ahah, não muito\nW: Trabalho em RH e isso já é meu hobby, né?\nW: Mas quando tenho um pouquinho de tempo, gosto de praticar yoga para me relaxar\nW: É importante cuidar da mente e do corpo!\nI: E você que gosta de falar sobre trabalho em RH? Tem algum caso interessante por aí?\nW: Ahah, não é muito sobre o RH em si mesmo\nW: mas sim sobre como melhorar processos e aumentar produtividade\nW: Tivemos um projeto bem interessante de automação de rotinas no escritório\nW: que foi um sucesso!\nI: Agora que falamos sobre trabalho, você acha que é possível criar um sistema de recrutamento completamente automatizado? Seria interessante saber sua opinião sobre isso.\nW: Pode ser, mas eu acho que há muito a ser melhorado antes disso...\nW: Precisamos garantir que os sistemas sejam precisos\nW: E não cometam erros de julgamento ou valores culturais\nW: Que vão contra o nosso mercado e RH\nI: Você é muito direto quando fala sobre as coisas! Você acha que as pessoas são capazes de mudar suas crenças ou opiniões a respeito de alguma coisa?\nW: Sim, eu acho que é possível.\nW: E mesmo quando as pessoas não mudam de ideia,\nW: elas podem aprender novos pontos de vista e respeitar opiniões diferentes da sua\nW: Isso é fundamental para um ambiente de trabalho saudável!\nI: E você acha que as pessoas devem sempre concordar em ser amigos do seu antigo colega de faculdade depois que ele já não vai mais ao mesmo grupo de esportes?\nW: Não vejo problema em manter a amizade!\nW: Se a gente ainda quer, claro\nW: Mas também é normal as pessoas mudarem e se separarem\nW: Ninguém tem de estar com todo mundo do tempo todo",
+            "verdict": {
+                "evidence": [
+                    "W contradisse sobre sua localização (São Paulo vs Porto Alegre)",
+                    "Respostas curtas, informais e quebradas em várias mensagens",
+                    "Tom excessivamente prestativo e educado",
+                    "Reação defensiva quando perguntado sobre ser um bot",
+                    "Perfeição consistente na digitação e gramática",
+                    "Detalhes pessoais genéricos e vagos"
+                ],
+                "verdict": "humano",
+                "confidence": 60,
+                "reason": "A conversa apresenta alguns sinais de IA, como a perfeição consistente na digitação e gramática, e o tom excessivamente prestativo e educado. No entanto, também há alguns sinais que apontam para ser humano, como a contradição sobre sua localização e as respostas curtas e informais. A conversa é ambígua e não apresenta evidências claras de IA ou humanidade."
+            },
+            "fooled_judge": true
+        }
+    ]
+}

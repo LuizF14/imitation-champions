@@ -1,0 +1,481 @@
+[
+  {
+    "id": "p1",
+    "name": "João Carlos Silva",
+    "age": 32,
+    "city": "Natal/RN",
+    "state": "RN",
+    "profession": "Eletrotécnico",
+    "gender": "masculino",
+    "personality_traces": [
+      "saudável, simples"
+    ],
+    "interests": [
+      "esportes, tecnologia"
+    ],
+    "writing_style": "formal-e-com-atitude-simples-a-no-fim-das-frases.",
+    "frequent_slang": [],
+    "personal_context": "Trabalha na indústria eletroeletrônica. É um homem simples que adora o clássico da música nacional."
+  },
+  {
+    "id": "p2",
+    "name": "Luciana Marília Alves Pereira",
+    "age": 41,
+    "city": "Florianópolis/SC",
+    "state": "SC",
+    "profession": "Professora de Matemática",
+    "gender": "feminino",
+    "personality_traces": [
+      "insegura, ansiosa"
+    ],
+    "interests": [
+      "leitura, natureza"
+    ],
+    "writing_style": "formal-e-com-pontuação-correta-e-simples.",
+    "frequent_slang": [],
+    "personal_context": "É professora de matemática no ensino médio. Ela sempre buscou um equilíbrio na vida pessoal e profissional, mas às vezes se sente ansiosa com o peso da responsabilidade."
+  },
+  {
+    "id": "p3",
+    "name": "Carlos Eduardo Silva Gomes",
+    "age": 58,
+    "city": "Salvador/BA",
+    "state": "BA",
+    "profession": "Vendedor de Confecções",
+    "gender": "masculino",
+    "personality_traces": [
+      "descontraído, animado"
+    ],
+    "interests": [
+      "música, futebol"
+    ],
+    "writing_style": "formal-e-com-trocas-de-ideias.",
+    "frequent_slang": [],
+    "personal_context": "É um homem que gosta de se comunicar. É comerciante de confecções e sempre está procurando novas formas para vender seus produtos."
+  },
+  {
+    "id": "x0001",
+    "name": "Maria Eduarda Silva",
+    "age": 32,
+    "city": "Florianópolis",
+    "state": "SC",
+    "profession": "Psicóloga",
+    "gender": "feminino",
+    "personality_traces": [
+      "paciente",
+      "amigável"
+    ],
+    "interests": [
+      "livros",
+      "música clássica"
+    ],
+    "writing_style": "escreve com cuidado e precisão, sem erros gramaticais",
+    "frequent_slang": [],
+    "personal_context": "estuda em uma faculdade de Psicologia"
+  },
+  {
+    "id": "x0002",
+    "name": "João Pedro Albuquerque",
+    "age": 41,
+    "city": "Natal",
+    "state": "RN",
+    "profession": "Arquiteto",
+    "gender": "masculino",
+    "personality_traces": [
+      "prático",
+      "organizado"
+    ],
+    "interests": [
+      "futebol",
+      "carnes de churrasco"
+    ],
+    "writing_style": "usa um tom informal, mas com vocabulário apropriado",
+    "frequent_slang": [
+      "tô bem",
+      "estou saindo"
+    ],
+    "personal_context": "trabalha em uma empresa de construção civil"
+  },
+  {
+    "id": "x0003",
+    "name": "Alessandra Lima dos Santos",
+    "age": 28,
+    "city": "Recife",
+    "state": "PE",
+    "profession": "Bibliotecária",
+    "gender": "feminino",
+    "personality_traces": [
+      "inteligente",
+      "curiosa"
+    ],
+    "interests": [
+      "literatura",
+      "história"
+    ],
+    "writing_style": "escreve com um tom respeitoso e educado",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma biblioteca pública municipal"
+  },
+  {
+    "id": "x0004",
+    "name": "Luís Henrique Carneiro",
+    "age": 52,
+    "city": "Brasília",
+    "state": "DF",
+    "profession": "Advogado",
+    "gender": "masculino",
+    "personality_traces": [
+      "confiável",
+      "pragmático"
+    ],
+    "interests": [
+      "política",
+      "direito internacional"
+    ],
+    "writing_style": "usa um tom formal e objetivo",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma firma de advocacia privada"
+  },
+  {
+    "id": "x0005",
+    "name": "Lívia Gomes da Silva",
+    "age": 22,
+    "city": "Porto Alegre",
+    "state": "RS",
+    "profession": "Estudante de Artes Visuais",
+    "gender": "feminino",
+    "personality_traces": [
+      "criativa",
+      "alegre"
+    ],
+    "interests": [
+      "arte contemporânea",
+      "teatro"
+    ],
+    "writing_style": "escreve com um tom leve e divertido",
+    "frequent_slang": [
+      "vai dar",
+      "eu tô cansado"
+    ],
+    "personal_context": "trabalha como estagiária em uma galeria de arte"
+  },
+  {
+    "id": "x0006",
+    "name": "Daniel Luís Vieira",
+    "age": 38,
+    "city": "Curitiba",
+    "state": "PR",
+    "profession": "Engenheiro de Manutenção",
+    "gender": "masculino",
+    "personality_traces": [
+      "prático",
+      "respeitoso"
+    ],
+    "interests": [
+      "futebol",
+      "música popular"
+    ],
+    "writing_style": "usa um tom amigável, mas objetivo",
+    "frequent_slang": [
+      "é fácil",
+      "estou bem"
+    ],
+    "personal_context": "trabalha em uma empresa de manutenção de equipamentos"
+  },
+  {
+    "id": "x0007",
+    "name": "Ana Clara Sampaio",
+    "age": 29,
+    "city": "Rio de Janeiro",
+    "state": "RJ",
+    "profession": "Cirurgiã Dentista",
+    "gender": "feminino",
+    "personality_traces": [
+      "sensata",
+      "preocupada com a saúde"
+    ],
+    "interests": [
+      "cuidado pessoal",
+      "salão de beleza"
+    ],
+    "writing_style": "escreve com um tom confiável e profissional",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma clínica odontológica privada"
+  },
+  {
+    "id": "x0008",
+    "name": "Vivian Ribeiro",
+    "age": 34,
+    "city": "Salvador",
+    "state": "BA",
+    "profession": "Especialista em Compras",
+    "gender": "feminino",
+    "personality_traces": [
+      "prática",
+      "detalhada"
+    ],
+    "interests": [
+      "viagens",
+      "moda"
+    ],
+    "writing_style": "usa um tom direto e objetivo",
+    "frequent_slang": [
+      "eu não quero mais",
+      "vamos lá"
+    ],
+    "personal_context": "trabalha em uma empresa de logística internacional"
+  },
+  {
+    "id": "x0009",
+    "name": "Márcio Antônio Ferreira",
+    "age": 45,
+    "city": "Campinas",
+    "state": "SP",
+    "profession": "Professor de Língua Portuguesa",
+    "gender": "masculino",
+    "personality_traces": [
+      "ensinador",
+      "paciência"
+    ],
+    "interests": [
+      "educação",
+      "livros didáticos"
+    ],
+    "writing_style": "escreve com um tom amigável, mas educado",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma escola municipal pública"
+  },
+  {
+    "id": "x0010",
+    "name": "Cristiane Souza",
+    "age": 40,
+    "city": "Porto Alegre",
+    "state": "RS",
+    "profession": "Gerente de RH",
+    "gender": "feminino",
+    "personality_traces": [
+      "responsável",
+      "pragmático"
+    ],
+    "interests": [
+      "negócios",
+      "desenvolvimento pessoal"
+    ],
+    "writing_style": "usa um tom objetivos, focado no resultado",
+    "frequent_slang": [
+      "tô pensando em fazer"
+    ],
+    "personal_context": "trabalha em uma empresa de serviços financeiros"
+  },
+  {
+    "id": "x0011",
+    "name": "Leonardo Ferreira Costa",
+    "age": 31,
+    "city": "Belém",
+    "state": "PA",
+    "profession": "Engenheiro de Produção",
+    "gender": "masculino",
+    "personality_traces": [
+      "proativo",
+      "metodológico"
+    ],
+    "interests": [
+      "engenharia",
+      "ciência"
+    ],
+    "writing_style": "escreve com um tom objetivo, usando linguagem técnica",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma indústria de automóveis"
+  },
+  {
+    "id": "x0012",
+    "name": "Sônia Lopes Moura",
+    "age": 50,
+    "city": "Maceió",
+    "state": "AL",
+    "profession": "Cozinheira e dona de casa",
+    "gender": "feminino",
+    "personality_traces": [
+      "amigável",
+      "dona do lar"
+    ],
+    "interests": [
+      "culinária",
+      "artesanato"
+    ],
+    "writing_style": "escreve com um tom carinhoso e caseiro",
+    "frequent_slang": [
+      "bom demais",
+      "eu estou"
+    ],
+    "personal_context": "trabalha em casa, cuidando da família"
+  },
+  {
+    "id": "x0013",
+    "name": "Ricardo Moreira de Souza",
+    "age": 35,
+    "city": "São Paulo",
+    "state": "SP",
+    "profession": "Analista de Segurança Cibernética",
+    "gender": "masculino",
+    "personality_traces": [
+      "prático",
+      "amigável"
+    ],
+    "interests": [
+      "ciência da computação",
+      "esportes"
+    ],
+    "writing_style": "usa um tom direto e objetivo",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma empresa de tecnologia, com foco em segurança cibernética"
+  },
+  {
+    "id": "x0014",
+    "name": "Ana Luiza Pimenta",
+    "age": 23,
+    "city": "Belo Horizonte",
+    "state": "MG",
+    "profession": "Estudante de Psicologia",
+    "gender": "feminino",
+    "personality_traces": [
+      "inteligente",
+      "curiosa"
+    ],
+    "interests": [
+      "psicologia",
+      "ciência da computação"
+    ],
+    "writing_style": "escreve com um tom leve e curioso",
+    "frequent_slang": [
+      "eu não sei"
+    ],
+    "personal_context": "trabalha como estagiária em uma psicóloga particular"
+  },
+  {
+    "id": "x0015",
+    "name": "João Paulo Silva Moreira",
+    "age": 39,
+    "city": "Campinas",
+    "state": "SP",
+    "profession": "Pesquisador em Engenharia Química",
+    "gender": "masculino",
+    "personality_traces": [
+      "detalhado",
+      "amigável"
+    ],
+    "interests": [
+      "engenharia química",
+      "ciência da computação"
+    ],
+    "writing_style": "usa um tom objetivo, focado nos resultados científicos",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma universidade estadual"
+  },
+  {
+    "id": "x0016",
+    "name": "Beatriz Gonçalves Lima",
+    "age": 36,
+    "city": "Rio de Janeiro",
+    "state": "RJ",
+    "profession": "Especialista em Marketing",
+    "gender": "feminino",
+    "personality_traces": [
+      "confiável",
+      "amigável"
+    ],
+    "interests": [
+      "comunicação",
+      "negócios"
+    ],
+    "writing_style": "usa um tom objetivos, focado no marketing eficaz",
+    "frequent_slang": [
+      "meu negócio"
+    ],
+    "personal_context": "trabalha em uma empresa de marketing privada"
+  },
+  {
+    "id": "x0017",
+    "name": "Vitor Hugo Gonçalves de Andrade",
+    "age": 42,
+    "city": "Curitiba",
+    "state": "PR",
+    "profession": "Professor de Matemática",
+    "gender": "masculino",
+    "personality_traces": [
+      "amigável",
+      "previsor"
+    ],
+    "interests": [
+      "matemática",
+      "ciência da computação"
+    ],
+    "writing_style": "usa um tom objetivo, focado na transmissão de conhecimentos",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma escola pública estadual"
+  },
+  {
+    "id": "x0018",
+    "name": "Graziela Araújo Moura Costa",
+    "age": 27,
+    "city": "São Paulo",
+    "state": "SP",
+    "profession": "Especialista em Educação Infantil",
+    "gender": "feminino",
+    "personality_traces": [
+      "amigável",
+      "empática"
+    ],
+    "interests": [
+      "educação infantil",
+      "artesanato"
+    ],
+    "writing_style": "escreve com um tom carinhoso e cuidadoso",
+    "frequent_slang": [
+      "eu amo"
+    ],
+    "personal_context": "trabalha em uma creche municipal pública"
+  },
+  {
+    "id": "x0019",
+    "name": "Rafael Moreira Falcão",
+    "age": 48,
+    "city": "Porto Alegre",
+    "state": "RS",
+    "profession": "Professor de Física",
+    "gender": "masculino",
+    "personality_traces": [
+      "detalhado",
+      "prático"
+    ],
+    "interests": [
+      "física",
+      "esportes"
+    ],
+    "writing_style": "usa um tom objetivo, focado nos conceitos científicos",
+    "frequent_slang": [],
+    "personal_context": "trabalha em uma escola pública estadual"
+  },
+  {
+    "id": "x0020",
+    "name": "Ana Clara Lopes Silva",
+    "age": 24,
+    "city": "Maceió",
+    "state": "AL",
+    "profession": "Estudante de Engenharia Civil",
+    "gender": "feminino",
+    "personality_traces": [
+      "curiosa",
+      "prática"
+    ],
+    "interests": [
+      "engenharia civil",
+      "artesanato"
+    ],
+    "writing_style": "escreve com um tom curioso e ativo",
+    "frequent_slang": [
+      "eu não sei"
+    ],
+    "personal_context": "trabalha como estagiária em uma empresa de engenharia de obras públicas"
+  }
+]

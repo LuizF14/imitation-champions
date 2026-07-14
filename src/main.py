@@ -28,7 +28,7 @@ def handle_test_ai(args):
     service = JudgmentService()
 
     result = service.run_benchmark(
-        n_conversations=2,
+        n_conversations=10,
         turns_per_conversation=6,
         output_file="data/judgement.json"
     )

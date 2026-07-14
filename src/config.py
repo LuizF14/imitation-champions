@@ -4,22 +4,28 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"
 
-    provider_main_agent: str = "groq"
-    provider_humanizer: str = "groq"
-    provider_persona_generator: str = "groq"
-    provider_judge: str = "groq"
-    provider_interrogator: str = "groq"
+    provider_main_agent: str = "ollama"
+    provider_humanizer: str = "ollama"
+    provider_persona_generator: str = "ollama"
+    provider_judge: str = "ollama"
+    provider_interrogator: str = "ollama"
 
-    model_main_agent: str = "llama-3.3-70b-versatile"
-    model_humanizer: str = "llama-3.1-8b-instant"
-    model_persona_generator: str = "llama-3.1-8b-instant"
-    model_judge: str = "llama-3.3-70b-versatile"
-    model_interrogator: str = "llama-3.3-70b-versatile"
+    # model_main_agent: str = "llama-3.3-70b-versatile"
+    # model_humanizer: str = "llama-3.1-8b-instant"
+    # model_persona_generator: str = "llama-3.1-8b-instant"
+    # model_judge: str = "llama-3.3-70b-versatile"
+    # model_interrogator: str = "llama-3.3-70b-versatile"
+
+    model_main_agent: str = "llama3.1"  # ou o modelo que você baixou
+    model_humanizer: str = "llama3.1"
+    model_persona_generator: str = "llama3.1"
+    model_judge: str = "llama3.1"
+    model_interrogator: str = "llama3.1"
 
     groq_api_key: str = ""
     imitation_api_key: str = ""
     host: str = "http://localhost"
-    port: str = "5000"
+    port: int = 5000
     backend_url: str = "http://localhost:3000"
 
     class Config:

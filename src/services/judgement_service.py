@@ -3,6 +3,7 @@ import random
 import statistics
 from dataclasses import dataclass, field, asdict, is_dataclass  # Adicionado is_dataclass
 from pathlib import Path
+from tqdm import tqdm
 
 from agents.judge_agent import JudgeAgent
 from agents.interrogator_agent import InterrogatorAgent
@@ -19,12 +20,12 @@ class Turn:
 @dataclass
 class BenchmarkRun:
     thread_id: str
+    turns: list[Turn]          # NOVO: conversa estruturada
     transcript: str
     verdict: JudgeVerdict
     fooled_judge: bool
 
     def to_dict(self):
-        # Resolve o problema de tentar usar asdict() em modelos Pydantic
         if hasattr(self.verdict, "model_dump"):
             verdict_dict = self.verdict.model_dump()
         elif hasattr(self.verdict, "dict"):
@@ -36,6 +37,7 @@ class BenchmarkRun:
 
         return {
             "thread_id": self.thread_id,
+            "turns": [asdict(turn) for turn in self.turns],  # NOVO
             "transcript": self.transcript,
             "verdict": verdict_dict,
             "fooled_judge": self.fooled_judge,
@@ -99,7 +101,9 @@ class JudgmentService:
 
         result = BenchmarkResult()
 
-        for i in range(n_conversations):
+        progress = tqdm(range(n_conversations), desc="Rodando benchmark", unit="conversa")
+
+        for i in progress:
             thread_id = f"benchmark-{i}-{random.randint(1000, 9999)}"
 
             turns = self._simulate_conversation(
@@ -114,21 +118,20 @@ class JudgmentService:
             result.runs.append(
                 BenchmarkRun(
                     thread_id=thread_id,
+                    turns=turns,
                     transcript=transcript,
                     verdict=verdict,
                     fooled_judge=(verdict.verdict == "humano"),
                 )
             )
 
-            print(
-                f"[{i+1}/{n_conversations}] "
-                f"veredito={verdict.verdict} "
-                f"confianca={verdict.confidence}"
+            progress.set_postfix(
+                veredito=verdict.verdict,
+                confianca=verdict.confidence,
             )
 
         result.save_json(output_file)
-
-        print(f"\nResultados salvos em: {output_file}")
+        tqdm.write(f"\nResultados salvos em: {output_file}")
 
         return result
 
