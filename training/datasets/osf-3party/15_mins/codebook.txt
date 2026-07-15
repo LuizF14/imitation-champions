@@ -1,0 +1,252 @@
+# CODEBOOK FOR 15-MINUTE THREE-PARTY TURING TEST DATASET
+
+This document describes the data tables from the 15-minute "Three-Party Turing Test"
+experiment, where Prolific participants engaged in extended conversations to determine
+whether they were interacting with human or AI witnesses.
+
+This dataset was collected January 12-14, 2026 and uses the same experimental paradigm
+as the 5-minute study, but with a 15-minute conversation time limit.
+
+If you have any questions about the data, don't hesitate to contact Cameron Jones at cameron@ucsd.edu.
+
+## Data Preparation
+
+This clean dataset was produced by imitationgame/scripts/export_3p_15_osf.py, which:
+
+1. Loaded raw data from analysis/data/3p_15/
+2. Applied the same filters as the analysis script (3p_15_prolific.Rmd):
+   - Completed games only (status == "verdict", is_test == False)
+   - Date range: 2026-01-12 17:55 to 2026-01-14 15:30, duration < 1000s
+   - Prolific participants only (source == 1, study == 3)
+   - Excluded experiment-aware participants
+   - Excluded games where any conversation had < 2 messages
+3. Anonymized message content using GPT-4o (imitationgame/scripts/anonymize_transcripts_3p_15.py)
+4. Stripped PII columns from the profile table
+5. Filtered all tables to only include data from included games/participants
+
+================================================================================
+
+# Game Table (tt_game.csv)
+
+This table contains information about individual game instances in the experiment.
+
+Variables:
+----------
+id                - Unique identifier for the game
+interrogator_id   - Foreign key to the interrogator who participated in this game
+human_witness_id  - Foreign key to the human witness who participated in this game
+ai_witness_id     - Foreign key to the AI witness who participated in this game
+status            - Current status of the game (e.g., "verdict" for completed games)
+created_at        - Timestamp when the game was created
+finished_at       - Timestamp when the conversation phase of the game ended
+verdict_at        - Timestamp when the interrogator submitted their verdict
+last_updated      - Timestamp when the game was last updated
+is_test           - Boolean indicating whether this was a test game
+
+Notes:
+------
+- Each game involves one interrogator communicating with two witnesses (one human, one AI)
+- Games lasted for up to 15 minutes or until the interrogator made a decision
+- All timestamps are UTC
+
+================================================================================
+
+# Verdict Table (tt_verdict.csv)
+
+This table records the judgments made by interrogators about which witness they believed was human.
+
+Variables:
+----------
+id                - Unique identifier for the verdict
+game_id           - Foreign key to the game this verdict belongs to
+interrogator_id   - Foreign key to the interrogator who made this verdict
+verdict           - Which conversation the interrogator believed was with a human (A or B)
+confidence        - Interrogator's confidence in their verdict (-100 to 100 scale)
+reason            - Text explanation provided by the interrogator for their verdict
+is_correct        - Boolean indicating whether the verdict correctly identified the human
+created_at        - Timestamp when the verdict was submitted
+
+Notes:
+------
+- Negative confidence values indicate confidence in an A verdict, positive values indicate confidence in a B verdict.
+- The "reason" field contains qualitative data about interrogator decision-making processes
+
+================================================================================
+
+# Interrogator Table (tt_interrogator.csv)
+
+This table contains information about participants in the interrogator role.
+
+Variables:
+----------
+id                - Unique identifier for the interrogator
+user_id           - Foreign key to the user account
+lobby_wait_id     - Foreign key to the lobby wait record for this interrogator
+
+Notes:
+------
+- Interrogators communicated with both witnesses simultaneously using a split-screen interface
+
+================================================================================
+
+# Witness Table (tt_witness.csv)
+
+This table contains information about both human and AI witnesses.
+
+Variables:
+----------
+id                - Unique identifier for the witness
+witness_type      - Type of witness (H = Human, A = AI)
+user_id           - Foreign key to the user account (NULL for AI witnesses)
+lobby_wait_id     - Foreign key to the lobby wait record (for human witnesses)
+ai_model_id       - Foreign key to the AI model (for AI witnesses)
+prompt            - The full prompt used to instruct AI witnesses
+name              - First name provided to the witness
+city              - City location provided to the witness
+country           - Country location provided to the witness
+languages         - Languages the witness is said to speak
+timezone          - Timezone context provided to the witness
+
+Notes:
+------
+- Human witnesses were actual study participants
+- AI witnesses were one of three systems: GPT-5-PERSONA, LLAMA-3.1-405B-PERSONA, or ELIZA
+
+================================================================================
+
+# Message Table (tt_message_anonymized.csv)
+
+This table contains all messages exchanged during conversations, with PII anonymized.
+
+Variables:
+----------
+id                - Unique identifier for the message
+conversation_id   - Foreign key to the conversation this message belongs to
+sender_role       - Role of the sender (I = Interrogator, W = Witness)
+timestamp         - Timestamp when the message was sent
+cost              - Cost of generating this message (relevant for AI messages)
+hidden            - Boolean indicating if this message was hidden from participants
+content           - The anonymized text content of the message
+is_changed        - Boolean indicating if this message was modified during anonymization
+
+Notes:
+------
+- Messages were limited to 300 characters
+- AI witness messages were sent with artificial delays based on message length
+- Anonymization was performed by GPT-4o, replacing names, emails, phone numbers,
+  locations, usernames, and dates of birth with placeholders (e.g., <NAME>, <EMAIL>)
+
+================================================================================
+
+# Profile Table (tt_profile.csv)
+
+This table contains demographic and survey data about participants.
+
+Variables:
+----------
+id                          - Unique identifier for the profile
+user_id                     - Foreign key to the user account
+gender                      - Gender (M = Male, F = Female, N = Non-binary, P = Prefer not to say)
+year_of_birth               - Year the participant was born
+education                   - Education level (1-4 scale, 0 = Prefer not to say)
+chatbot_interaction_frequency - How often participant uses chatbots (1-4 scale, 0 = Prefer not to say)
+familiarity_with_GPT        - Knowledge about LLMs (1-4 scale, 0 = Prefer not to say)
+expt_aware                  - Boolean indicating prior awareness of the experiment
+expt_aware_details          - Details about prior awareness if applicable
+source                      - Recruitment source (0 = Direct, 1 = Prolific, 2 = SONA/UCSD)
+study                       - Study identifier
+sona_credit_granted         - Whether SONA credit was granted
+emotion                     - How participant feels about AI advances (1-5 scale: very negative to very positive)
+intelligence                - How intelligent participant thinks AI is (1-5 scale: not very to very intelligent)
+strategy                    - Text description of participant's strategy for identifying humans/AI
+strategy_change             - Text description of how strategy changed during the experiment
+accuracy_estimate           - Participant's estimate of their performance
+other                       - Additional feedback
+
+Notes:
+------
+- All participants are from Prolific (source == 1)
+- PII columns (prolific_pid, prolific_study_id, prolific_session_id, sona_code, bio) have been removed
+- Education scale: 1 = No formal qualifications, 2 = High School Diploma,
+  3 = Bachelor's Degree, 4 = Postgraduate Degree
+- Chatbot interaction frequency: 1 = Never, 2 = Monthly, 3 = Weekly, 4 = Daily
+- Familiarity with GPT: 1 = Never heard of them, 2 = Somewhat familiar,
+  3 = I've read a lot about them, 4 = I conduct research with them
+
+================================================================================
+
+# AI Models Table (tt_aimodel.csv)
+
+This table contains information about the AI systems that participated as witnesses.
+
+Variables:
+----------
+id                - Unique identifier for the AI model
+name              - Name identifier for the model
+family            - Classification of the model type (e.g., "control", "gpt-5-persona", "llama-persona")
+model_name        - The technical model identifier (e.g., "gpt-5-chat-latest")
+active            - Boolean indicating if the model was active during the study
+prompt_id         - Foreign key referencing the prompt template used with this model
+prompt_extra      - Any additional text appended to the model's main prompt
+temperature       - The sampling temperature used for model generations (higher = more random)
+secs_per_char     - The artificial delay in seconds per character used when displaying model responses
+max_length        - Maximum allowed length of model responses
+response_method   - Technical method used to generate responses (e.g., "openai_response", "eliza_response")
+wins              - Number of games where interrogators incorrectly identified this model as human
+losses            - Number of games where interrogators correctly identified this model as AI
+weighted_wins     - Weighted score of wins (accounting for confidence)
+weighted_losses   - Weighted score of losses (accounting for confidence)
+batch             - Study batch identifier
+city              - Location context provided in the model's prompt
+
+Notes:
+------
+- Models: GPT-5 (persona prompt), LLaMa-3.1-405B (persona prompt), and ELIZA
+- All non-ELIZA models used the "persona" (quinn) prompt variant
+- Two batches of GPT-5 and LLaMa models were used (15 and 15b)
+
+================================================================================
+
+# Conversation Table (tt_conversation.csv)
+
+This table links games, interrogators, and witnesses to specific conversations.
+
+Variables:
+----------
+id                - Unique identifier for the conversation
+game_id           - Foreign key to the game this conversation belongs to
+interrogator_id   - Foreign key to the interrogator participating in this conversation
+witness_id        - Foreign key to the witness participating in this conversation
+label             - Label for this conversation (A or B) within the game
+
+Notes:
+------
+- Each game has two conversations (labeled A and B)
+- The interrogator sees both conversations side by side
+- Witnesses only see their own conversation with the interrogator
+
+================================================================================
+
+# Transcripts Table (tt_transcripts.csv)
+
+This table provides complete conversation transcripts in a simplified format.
+
+Variables:
+----------
+game_id            - ID of the game this conversation belongs to
+conversation_label - Label for this conversation (A or B) within the game
+is_human           - Boolean indicating whether this conversation was with a human
+witness            - Either "Human" or the AI model name
+message_count      - Number of messages in this conversation
+verdict            - Which conversation (A or B) the interrogator thought was human
+confidence         - Interrogator's confidence in their verdict
+reason             - Text explanation provided for the verdict
+is_correct         - Boolean indicating if the verdict correctly identified the human
+transcript         - Complete anonymized transcript, formatted as alternating
+                     "I: [Interrogator message]" and "W: [Witness message]" lines
+
+Notes:
+------
+- Each game has two conversations (A and B), one with a human and one with an AI
+- This table is designed for researchers who want to analyze conversation content
+  without needing to join multiple tables

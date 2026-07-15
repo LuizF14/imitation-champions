@@ -1,0 +1,13 @@
+"id","name","family","model_name","active","prompt_id","prompt_extra","temperature","secs_per_char","max_length","response_method","wins","losses","weighted_wins","weighted_losses","batch","city"
+50,"gpt-4o_minimal_sona","control","gpt-4o-2024-08-06",TRUE,13,NA,1,0.3,1000,"openai_response",13,75,1.47,1.21,70,"San Diego"
+71,"gpt-4.5_minimal_sona","no-persona","gpt-4.5-preview-2025-02-27",TRUE,13,NA,1,0.3,1000,"openai_response",31,73,5.84,-17.81,70,"San Diego"
+73,"gpt-4.5_quinn_sona","gpt-4.5-persona","gpt-4.5-preview-2025-02-27",TRUE,15,NA,1,0.3,1000,"openai_response",112,48,9.26,4.04,70,"San Diego"
+74,"llama-405b_minimal_sona","no-persona","meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",TRUE,13,NA,1,0.3,1000,"together_ai_response",29,68,3.23,-15.76,70,"San Diego"
+76,"llama-405b_quinn_sona","llama-persona","meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",TRUE,15,NA,1,0.3,1000,"together_ai_response",77,87,3.56,4.04,70,"San Diego"
+80,"eliza_sona","control","eliza",TRUE,16,NA,0.5,0.3,1000,"eliza_response",16,80,-4.56,0.100000000000002,70,"San Diego"
+81,"eliza_prolific","control","eliza",TRUE,16,NA,0.5,0.3,1000,"eliza_response",31,81,5.9,-14.85,71,NA
+82,"llama-405b_quinn_prolific","llama-persona","meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",TRUE,17,NA,1,0.3,1000,"together_ai_response",144,66,5.34,-13.63,71,NA
+83,"llama-405b_minimal_prolific","no-persona","meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",TRUE,18,NA,1,0.3,1000,"together_ai_response",50,54,0.680000000000001,-3.83,71,NA
+84,"gpt-4.5_quinn_prolific","gpt-4.5-persona","gpt-4.5-preview-2025-02-27",TRUE,17,NA,1,0.3,1000,"openai_response",165,58,-6.3,-11.2,71,NA
+85,"gpt-4.5_minimal_prolific","no-persona","gpt-4.5-preview-2025-02-27",TRUE,18,NA,1,0.3,1000,"openai_response",48,59,6.31,12.28,71,NA
+86,"gpt-4o_minimal_prolific","control","gpt-4o-2024-08-06",TRUE,18,NA,1,0.3,1000,"openai_response",27,79,-4.53,5.31,71,NA

@@ -1,0 +1,1875 @@
+---
+title: "3P Turing Test: Pre-registered Analyses (Prolific)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: true
+    theme: flatly
+    highlight: kate
+    code_folding: hide
+---
+
+# Setup
+
+Library imports
+
+```{r message=FALSE, warning=FALSE}
+
+# source("download_data_3p.R")
+
+library(tidyverse)
+library(janitor)
+library(RColorBrewer)
+library(scales)
+library(xtable)
+library(lmerTest)
+library(brms)
+
+```
+
+
+Load data
+
+```{r  message=FALSE, warning=FALSE}
+
+game <- read.csv("data/tt_game.csv")
+verdict <- read.csv("data/tt_verdict.csv")
+interrogator <- read.csv("data/tt_interrogator.csv")
+witness <- read.csv("data/tt_witness.csv")
+message <- read.csv("data/tt_message_anonymized.csv")
+profile <- read.csv("data/tt_profile.csv")
+model <- read.csv("data/tt_aimodel.csv")
+conversation <-  read.csv("data/tt_conversation.csv")
+
+```
+
+
+## Games
+
+```{r  message=FALSE, warning=FALSE}
+
+
+
+# Get profile, ai_model
+
+games.all <- game %>%
+  
+  # Preprocessing
+  mutate(
+    created_at = as.POSIXct(created_at, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    finished_at = as.POSIXct(finished_at, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    day = lubridate::floor_date(created_at, "day"),
+    duration = as.numeric(difftime(finished_at, created_at, units = "secs"))
+  ) %>%
+  
+  # Verdict
+  merge(
+    verdict %>%
+      group_by(game_id) %>%
+      mutate(
+        verdict_rank = row_number(desc(id))
+      ) %>%
+      filter(verdict_rank == 1) %>%
+      rename("verdict_id" = id) %>%
+      select(-interrogator_id, -verdict_rank, -created_at),
+    by.x = "id", by.y = "game_id"
+  ) %>%
+  mutate(
+    success = is_correct
+  ) %>%
+  
+  # Interrogator
+  merge(
+    interrogator %>%
+      mutate(
+        interrogator_user_id = user_id
+      ) %>%
+      select(
+        -lobby_wait_id, -user_id
+      ),
+    by.x = "interrogator_id", by.y="id"
+  )  %>%
+  
+  # Human Witness
+  merge(
+    witness %>%
+      filter(witness_type == "H") %>%
+      mutate(
+        human_witness_user_id = user_id
+      ) %>%
+      select(
+        id, human_witness_user_id
+      ),
+    by.x = "human_witness_id", by.y="id"
+  ) %>%
+  
+  # AI Witness
+  merge(
+    witness %>%
+      filter(witness_type == "A") %>%
+      select(
+        id, ai_model_id
+      ),
+    by.x = "ai_witness_id", by.y="id"
+  ) %>%
+  
+  # Interrogator Profile
+  merge(
+    profile %>%
+      filter(
+        source == 1,
+        study == 3,
+        ) %>%
+      select(-id),
+    by.x = "interrogator_user_id", by.y = "user_id"
+  ) %>%
+  mutate(
+    age = 2025-year_of_birth,
+    age = ifelse(age < 100 & age > 0, age, NA)
+  ) %>%
+  
+  # AI Model
+  merge(
+    model %>%
+      mutate(
+        ai_model_id = id,
+        ai_model = name
+      ) %>%
+      select(ai_model_id, ai_model, family, model_name, active),
+    all.x = TRUE, all.y = FALSE
+  ) %>%
+  
+  # Game index
+  group_by(
+    interrogator_user_id
+  ) %>%
+  mutate(
+    interrogator_game_index = dense_rank(id)
+  ) %>%
+  ungroup()
+
+
+# Filter games
+games <- games.all
+
+```
+
+## Exclusions
+
+### Prior knowledge
+
+```{r}
+
+profile <- profile %>%
+  filter(user_id %in% games$interrogator_user_id)
+
+n.pre <- nrow(profile)
+
+profile %>%
+  group_by(expt_aware) %>%
+  summarize(n = n())
+
+profile %>%
+  filter(expt_aware == TRUE) %>%
+  select(expt_aware, expt_aware_details)
+
+n.ppt.expt.aware <- nrow(profile %>%
+  filter(expt_aware == TRUE))
+
+profile <- profile %>%
+  filter(expt_aware == FALSE)
+
+games <- games %>%
+  filter(interrogator_user_id %in% profile$user_id)
+
+```
+
+`r n.ppt.expt.aware` Participants excluded for saying they are familiar with the site.
+
+
+### 2 messages
+
+```{r}
+
+conversation <- conversation %>%
+  filter(game_id %in% games$id)
+
+conversation <- conversation %>%
+  merge(message %>%
+          mutate(n_characters = nchar(content)) %>%
+          group_by(conversation_id) %>%
+          summarize(
+            n_messages = n(),
+            n_characters = sum(n_characters),
+            cost = sum(cost)
+            ), all.y=F, by.x="id", by.y="conversation_id")
+
+no_interaction_games <- conversation %>%
+  group_by(game_id) %>%
+  summarize(min_n_messages = min(n_messages)) %>%
+  filter(min_n_messages < 2) %>%
+  pull(game_id)
+
+# length(no_interaction_games)
+
+games <- games %>% filter(!(id %in% c(no_interaction_games)))
+
+conversation <- conversation %>%
+  filter(game_id %in% games$id)
+
+```
+
+`r length(no_interaction_games)` Games excluded for sending fewer than 2 messages.
+
+### Exclusions Summary
+
+```{r}
+
+# Summary of how many ppts there were before exclusions, how many were excluded in each cat and how many are retained
+
+summary_table <- data.frame(
+  Category = c("Total participants", "Excluded for prior knowledge", "Excluded for < 2 messages", "Remaining participants"),
+  Count = c(n.pre, n.ppt.expt.aware, length(no_interaction_games), nrow(profile))
+)
+
+summary_table
+
+```
+
+# Descriptive Stats
+
+## Summary
+
+```{r}
+
+games %>%
+  mutate(
+    duration = as.numeric(duration),
+    ai_model = as.factor(ai_model)
+  ) %>%
+  select(ai_model, duration, is_correct, confidence, interrogator_game_index) %>%
+  summary()
+
+```
+
+## No. games
+
+```{r}
+
+nrow(games)
+
+```
+
+
+## No. Models
+```{r}
+
+games %>%
+  group_by(ai_model) %>%
+  summarize(n_games = n()) %>%
+  arrange(-n_games) 
+
+```
+
+## No. Participants
+
+```{r}
+
+length(unique(games$interrogator_user_id))
+
+```
+
+
+## Game date
+
+
+```{r}
+
+games %>%
+  group_by(interrogator_user_id) %>%
+  summarize(created_at = max(created_at)) %>%
+  mutate(
+    day = lubridate::floor_date(created_at, "day")
+  ) %>%
+  ggplot(aes(x = day)) +
+  geom_histogram(stat="count") + 
+  theme_minimal(base_size=22)
+
+```
+
+
+## Duration
+
+
+```{r}
+
+games %>%
+  ggplot(aes(x = duration)) +
+  geom_histogram(bins=30) + 
+  theme_minimal(base_size=22) + 
+  scale_x_continuous()
+  
+
+```
+
+```{r}
+
+games %>%
+  filter(duration <= 300) %>%
+  select(duration) %>%
+  summary()
+
+```
+
+## No. Messages
+
+```{r}
+
+conversation %>%
+  ggplot(aes(x = n_messages)) + 
+  geom_histogram() + 
+  theme_minimal()
+
+```
+
+```{r}
+
+conversation %>%
+  select(n_messages) %>%
+  summary()
+
+```
+
+## No. Characters
+
+```{r}
+
+conversation %>%
+  ggplot(aes(x = n_characters)) + 
+  geom_histogram() + 
+  theme_minimal()
+
+```
+
+```{r}
+
+conversation %>%
+  select(n_characters) %>%
+  summary()
+
+```
+
+## Games per user
+
+```{r}
+
+games %>%
+  group_by(interrogator_user_id) %>%
+  summarize(
+    n_games = n()
+  ) %>%
+  ggplot(aes(x = n_games)) +
+  geom_bar(stat="count") + 
+  theme_minimal()
+
+```
+
+
+## Verdicts
+
+```{r}
+
+games %>%
+  group_by(verdict) %>%
+  summarize(n=n(), prop = n/nrow(games))
+
+```
+
+# Order effects
+
+## Overall
+
+```{r}
+
+games %>%
+  ggplot(aes(x = interrogator_game_index, y = as.numeric(success))) + 
+  stat_summary(geom="pointrange", fun.data="mean_cl_boot") + 
+  geom_smooth(method="lm", formula = "y~x") + 
+  theme_minimal() + 
+  labs(y = "Interrogator Accuracy", x = "Interrogator Trial Index")
+
+```
+
+## By Condition
+
+```{r}
+
+games %>%
+  ggplot(aes(x = interrogator_game_index, y = as.numeric(success))) + 
+  stat_summary(geom="bar", fun="mean") +
+  stat_summary(geom = "errorbar", fun.data="mean_cl_boot", width = 0.2) +
+  facet_wrap(facets=vars(family)) + 
+  theme_minimal()  + 
+  labs(y = "Interrogator Accuracy", x = "Interrogator Trial Index")
+
+```
+
+
+## First vs second persona
+
+```{r}
+
+games.with.persona.order <- games %>%
+  filter(family %in% c("llama-persona", "gpt-4.5-persona")) %>%
+  group_by(interrogator_user_id) %>%
+  mutate(persona_trial_order = dense_rank(interrogator_game_index))
+
+games.with.persona.order %>%
+  ggplot(aes(x = as.factor(persona_trial_order), y = as.numeric(success))) + 
+  stat_summary(geom="bar", fun="mean") + 
+  stat_summary(geom="errorbar", fun.data="mean_cl_boot", width=0.2) + 
+  facet_wrap(facets=vars(family)) + 
+  theme_minimal() + 
+  labs(y = "Interrogator Accuracy", x = "Persona Trial Order")
+
+
+```
+
+Overall
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order))
+
+```
+
+LLaMa
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order %>% filter(family == "llama-persona")))
+
+```
+
+GPT-4.5
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order %>% filter(family == "gpt-4.5-persona")))
+  
+
+games.persona.first <- games.with.persona.order %>%
+  filter(persona_trial_order == 1)
+
+```
+
+# Model Comparison: Overall Success Rates
+
+```{r}
+# Compare all models' success rates
+model_comparison <- games %>%
+  mutate(success = ifelse(success, 0, 1)) %>%
+  group_by(ai_model) %>%
+  summarize(
+    success_rate = mean(success),
+    se = sqrt(success_rate * (1 - success_rate) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(success_rate)
+
+# Print table
+model_comparison %>%
+  mutate(
+    success_rate = round(success_rate, 3),
+    `95% CI` = paste0("[", round(success_rate - 1.96 * se, 3), ", ", 
+                      round(success_rate + 1.96 * se, 3), "]"),
+    vs_chance = ifelse(
+      success_rate + 1.96 * se < 0.5, "**Worse than chance**",
+      ifelse(success_rate - 1.96 * se > 0.5, "**Better than chance**", 
+             "Not different from chance")
+    )
+  ) %>%
+  select(ai_model, n, success_rate, `95% CI`, vs_chance) %>%
+  rename(Model = ai_model, `Sample Size` = n, `Success Rate` = success_rate) %>%
+  knitr::kable(caption = "Comparison of All AI Models' Success Rates")
+
+# Visualize model comparison
+ggplot(model_comparison, aes(y = reorder(ai_model, -success_rate), x = success_rate)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbarh(
+    aes(xmin = success_rate - 1.96 * se, xmax = success_rate + 1.96 * se),
+    height = 0.3
+  ) +
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Success Rate",
+    y = "Model",
+    title = "Comparison of AI Models' Success Rates"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_x_continuous(limits = c(0, 1))
+```
+
+
+# H1: LLMs indistinguishable from humans in Turing test context
+
+```{r}
+# Format p-values for display
+format_pvalue <- function(p) {
+  if (p < 0.001) return("< 0.001")
+  if (p < 0.01) return(format(round(p, 3), nsmall = 3))
+  return(format(round(p, 2), nsmall = 2))
+}
+
+# Modified function to run one-sided binomial tests
+run_binomial_test <- function(data_filtered, hypothesis_name, condition_desc, alternative = "two.sided") {
+  model <- glm(success ~ 1, family = "binomial", data = data_filtered)
+  model_summary <- summary(model)
+  
+  # Extract key statistics
+  coef_est <- model_summary$coefficients[1, 1]
+  std_error <- model_summary$coefficients[1, 2]
+  z_value <- coef_est / std_error
+  success_prob <- plogis(coef_est)
+  ci <- confint(model)
+  success_ci <- plogis(ci)
+  
+  # Calculate p-value based on specified alternative
+  if (alternative == "less") {
+    # For testing if success_prob < 0.5 (log odds < 0)
+    p_value <- pnorm(z_value) # Lower tail
+  } else if (alternative == "greater") {
+    # For testing if success_prob > 0.5 (log odds > 0)
+    p_value <- 1 - pnorm(z_value) # Upper tail
+  } else {
+    # Two-sided test (default from summary)
+    p_value <- model_summary$coefficients[1, 4]
+  }
+  
+  # Print results in a structured format
+  cat("------------------------------------------------------\n")
+  cat(paste0(hypothesis_name, ": ", condition_desc, "\n"))
+  cat("------------------------------------------------------\n")
+  cat("Alternative hypothesis:", alternative, "\n")
+  print(model_summary)
+  cat("\n")
+  cat("Estimated success probability:", round(success_prob, 3), "\n")
+  cat("95% CI for success probability:", round(success_ci[1], 3), "to", round(success_ci[2], 3), "\n")
+  
+  # Format p-value for display
+  if (p_value < 0.001) {
+    p_value_display <- "p < 0.001"
+  } else if (p_value < 0.01) {
+    p_value_display <- paste0("p = ", format(round(p_value, 3), nsmall = 3))
+  } else {
+    p_value_display <- paste0("p = ", format(round(p_value, 2), nsmall = 2))
+  }
+  
+  # Conclusion based on the alternative hypothesis
+  if (alternative == "less") {
+    if (p_value < 0.05) {
+      conclusion <- paste0("**Participants are significantly worse than chance at identifying this model. (", p_value_display, ")**")
+    } else {
+      conclusion <- paste0("Participants are not significantly worse than chance at identifying this model. (", p_value_display, ")")
+    }
+  } else if (alternative == "greater") {
+    if (p_value < 0.05) {
+      conclusion <- paste0("**Participants are significantly better than chance at identifying this model. (", p_value_display, ")**")
+    } else {
+      conclusion <- paste0("Participants are not significantly better than chance at identifying this model. (", p_value_display, ")")
+    }
+  } else {
+    if (p_value < 0.05) {
+      if (success_prob > 0.5) {
+        conclusion <- paste0("**Participants are significantly better than chance at identifying this model. (", p_value_display, ")**")
+      } else {
+        conclusion <- paste0("**Participants are significantly worse than chance at identifying this model. (", p_value_display, ")**")
+      }
+    } else {
+      conclusion <- paste0("Participants are not significantly different from chance at identifying this model. (", p_value_display, ")")
+    }
+  }
+  
+  cat(conclusion, "\n\n")
+  
+  return(list(
+    model = model, 
+    success_prob = success_prob, 
+    p_value = p_value, 
+    significant = p_value < 0.05,
+    conclusion = conclusion
+  ))
+}
+
+# Alternative approach using exact binomial test
+run_exact_binomial_test <- function(data_filtered, hypothesis_name, condition_desc, alternative = "less") {
+  # Count successes and total trials
+  n_success <- sum(data_filtered$success)
+  n_trials <- nrow(data_filtered)
+  
+  # Run binomial test (one-sided)
+  binom_result <- binom.test(n_success, n_trials, p = 0.5, alternative = alternative)
+  
+  # Extract results
+  success_prob <- binom_result$estimate
+  p_value <- binom_result$p.value
+  ci <- binom_result$conf.int
+  
+  # Print results
+  cat("------------------------------------------------------\n")
+  cat(paste0(hypothesis_name, ": ", condition_desc, "\n"))
+  cat("------------------------------------------------------\n")
+  cat("Alternative hypothesis:", alternative, "\n")
+  cat("Number of successes:", n_success, "out of", n_trials, "\n")
+  cat("Estimated success probability:", round(success_prob, 3), "\n")
+  cat("95% CI for success probability:", round(ci[1], 3), "to", round(ci[2], 3), "\n")
+  
+  # Format p-value
+  if (p_value < 0.001) {
+    p_value_display <- "p < 0.001"
+  } else if (p_value < 0.01) {
+    p_value_display <- paste0("p = ", format(round(p_value, 3), nsmall = 3))
+  } else {
+    p_value_display <- paste0("p = ", format(round(p_value, 2), nsmall = 2))
+  }
+  
+  # Conclusion
+  if (alternative == "less") {
+    if (p_value < 0.05) {
+      conclusion <- paste0("**Participants are significantly worse than chance at identifying this model. (", p_value_display, ")**")
+    } else {
+      conclusion <- paste0("Participants are not significantly worse than chance at identifying this model. (", p_value_display, ")")
+    }
+  } else if (alternative == "greater") {
+    if (p_value < 0.05) {
+      conclusion <- paste0("**Participants are significantly better than chance at identifying this model. (", p_value_display, ")**")
+    } else {
+      conclusion <- paste0("Participants are not significantly better than chance at identifying this model. (", p_value_display, ")")
+    }
+  }
+  
+  cat(conclusion, "\n\n")
+  
+  return(list(
+    binom_result = binom_result,
+    success_prob = success_prob,
+    p_value = p_value,
+    significant = p_value < 0.05,
+    conclusion = conclusion
+  ))
+}
+```
+
+## H1a: ELIZA (manipulation check)
+
+```{r}
+h1a_results <- run_binomial_test(
+  games %>% filter(ai_model == "eliza_prolific"),
+  "H1a", 
+  "Human accuracy at determining ELIZA is an AI (should be > 0.5)",
+  "greater"
+)
+```
+
+## H1b: Llama with persona prompt
+
+```{r}
+# First persona trials only
+h1b_first_results <- run_binomial_test(
+  games.persona.first %>% filter(ai_model == "llama-405b_quinn_prolific"),
+  "H1b (first persona trial only)", 
+  "Human accuracy at detecting Llama with persona (test if not > 0.5)",
+  "greater"
+)
+
+# All trials
+h1b_all_results <- run_binomial_test(
+  games %>% filter(ai_model == "llama-405b_quinn_prolific"),
+  "H1b (all trials)", 
+  "Human accuracy at detecting Llama with persona (test if not > 0.5)",
+  "greater"
+)
+```
+
+## H1c: GPT-4.5 with persona prompt
+
+```{r}
+# First persona trials only
+h1c_first_results <- run_binomial_test(
+  games.persona.first %>% filter(ai_model == "gpt-4.5_quinn_prolific"),
+  "H1c (first persona trial only)", 
+  "Human accuracy at detecting GPT-4.5 with persona (test if not > 0.5)",
+  "greater"
+)
+
+# All trials
+h1c_all_results <- run_binomial_test(
+  games %>% filter(ai_model == "gpt-4.5_quinn_prolific"),
+  "H1c (all trials)", 
+  "Human accuracy at detecting GPT-4.5 with persona (test if not > 0.5)",
+  "greater"
+)
+```
+
+
+## Summary of H1 Results
+
+```{r}
+
+h1.corrected.pvals <- c(h1a_results$p_value, 
+             h1b_first_results$p_value, h1b_all_results$p_value,
+             h1c_first_results$p_value, h1c_all_results$p_value) / 2
+
+# Summarize H1 results
+h1_summary <- data.frame(
+  Hypothesis = c("H1a: ELIZA", 
+                 "H1b: Llama (first)", "H1b: Llama (all)",
+                 "H1c: GPT-4.5 (first)", "H1c: GPT-4.5 (all)"),
+  Accuracy = c(h1a_results$success_prob, 
+                  h1b_first_results$success_prob, h1b_all_results$success_prob,
+                  h1c_first_results$success_prob, h1c_all_results$success_prob),
+  p_value = c(h1a_results$p_value, 
+             h1b_first_results$p_value, h1b_all_results$p_value,
+             h1c_first_results$p_value, h1c_all_results$p_value),
+  Significant = c(h1a_results$significant,
+                 h1b_first_results$significant, h1b_all_results$significant,
+                 h1c_first_results$significant, h1c_all_results$significant),
+  p_value_corrected = h1.corrected.pvals
+)
+
+# Print summary table
+h1_summary %>%
+  mutate(
+    Accuracy = round(Accuracy, 3),
+    p_value_display = sapply(p_value, format_pvalue),
+    p_value_corrected = sapply(p_value_corrected, format_pvalue),
+    Significance = ifelse(Significant, "**Significant**", "Not Significant")
+  ) %>%
+  select(Hypothesis, Accuracy, p_value_display, p_value_corrected, Significance) %>%
+  rename(`P-value` = p_value_display, `P-value (corrected)` = p_value_display) %>%
+  knitr::kable(caption = "Summary of H1 Tests")
+```
+
+# H2: Prompting strategies affect participant accuracy
+
+## H2a: Persona vs no-persona prompts
+
+```{r}
+# Create a dataset for H2 analysis
+h2_data <- games %>% 
+  filter(ai_model %in% c(
+    "llama-405b_minimal_prolific", "llama-405b_quinn_prolific", 
+    "gpt-4.5_minimal_prolific", "gpt-4.5_quinn_prolific"
+  )) %>%
+  mutate(
+    prompt_type = ifelse(grepl("minimal", ai_model), "no-persona", "persona"),
+    model_name = ifelse(grepl("llama", ai_model), "Llama", "GPT-4.5")
+  )
+
+# Run mixed effects model
+h2a_model <- lme4::glmer(
+  success ~ prompt_type + (1 | interrogator_user_id) + (1 | model_name),
+  family = "binomial",
+  data = h2_data
+)
+
+# Print results
+cat("H2a: Effect of prompt type (persona vs no-persona) on participant accuracy\n")
+cat("------------------------------------------------------\n")
+print(summary(h2a_model))
+
+# Extract key statistics
+h2a_coef <- fixef(h2a_model)["prompt_typepersona"]
+h2a_se <- sqrt(diag(vcov(h2a_model)))["prompt_typepersona"]
+h2a_p <- 2 * (1 - pnorm(abs(h2a_coef/h2a_se)))
+
+# Format p-value
+if (h2a_p < 0.001) {
+  h2a_p_display <- "p < 0.001"
+} else if (h2a_p < 0.01) {
+  h2a_p_display <- paste0("p = ", format(round(h2a_p, 3), nsmall = 3))
+} else {
+  h2a_p_display <- paste0("p = ", format(round(h2a_p, 2), nsmall = 2))
+}
+
+# Interpret results
+if (h2a_p < 0.05) {
+  if (h2a_coef > 0) {
+    cat(paste0("**Persona prompting significantly increases participant accuracy compared to no-persona prompting. (", h2a_p_display, ")**\n"))
+  } else {
+    cat(paste0("**Persona prompting significantly decreases participant accuracy compared to no-persona prompting. (", h2a_p_display, ")**\n"))
+  }
+} else {
+  cat(paste0("There is no significant difference in participant accuracy between persona and no-persona prompting. (", h2a_p_display, ")\n"))
+}
+
+# Visualize results
+h2_data %>%
+  group_by(prompt_type, model_name) %>%
+  summarize(
+    success_rate = mean(success),
+    se = sqrt(success_rate * (1 - success_rate) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = prompt_type, y = success_rate, fill = model_name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(
+    aes(ymin = success_rate - 1.96 * se, ymax = success_rate + 1.96 * se),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Prompt Type",
+    y = "Accuracy",
+    fill = "Model",
+    title = "Effect of Prompt Type on participant accuracy"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 1))
+```
+
+# H3: Advanced LLMs indistinguishable without specific persona
+
+## H3a: GPT-4.5 with minimal prompt
+
+```{r}
+h3a_results <- run_binomial_test(
+  games %>% filter(ai_model == "gpt-4.5_minimal_prolific"),
+  "H3a", 
+  "Human accuracy at detecting GPT-4.5 with minimal prompt (test if not > 0.5)"
+)
+```
+
+## H3b: Llama with minimal prompt
+
+```{r}
+h3b_results <- run_binomial_test(
+  games %>% filter(ai_model == "llama-405b_minimal_prolific"),
+  "H3b", 
+  "Human accuracy at detecting Llama with minimal prompt (test if not > 0.5)"
+)
+```
+
+
+
+## Summary of H3 Results
+
+```{r}
+
+
+h3.corrected.pvals <- c(h3a_results$p_value, h3b_results$p_value) / 2
+
+
+# Summarize H3 results
+h3_summary <- data.frame(
+  Hypothesis = c("H3a: GPT-4.5 (no-persona)", "H3b: Llama (no-persona)"),
+  Accuracy = c(h3a_results$success_prob, h3b_results$success_prob),
+  p_value = c(h3a_results$p_value, h3b_results$p_value),
+  Significant = c(h3a_results$significant, h3b_results$significant),
+  p_value_corrected = h3.corrected.pvals
+)
+
+# Print summary table
+h3_summary %>%
+  mutate(
+    Accuracy = round(Accuracy, 3),
+    p_value_display = sapply(p_value, format_pvalue),
+    p_value_corrected = sapply(p_value_corrected, format_pvalue),
+    Significance = ifelse(Significant, "**Significant**", "Not Significant")
+  ) %>%
+  select(Hypothesis, Accuracy, p_value_display, p_value_corrected, Significance) %>%
+  rename(`P-value` = p_value_display, `P-value (corrected)` = p_value_corrected) %>%
+  knitr::kable(caption = "Summary of H3 Tests")
+
+```
+
+# H4: Modern LLMs outperform older conversational AI
+
+## H4a: GPT-4.5 vs ELIZA
+
+```{r}
+# With no-persona prompt
+h4a1_model <- glm(
+  success ~ ai_model, 
+  family = "binomial",
+  data = games %>% 
+    filter(ai_model %in% c("gpt-4.5_minimal_prolific", "eliza_prolific"))
+)
+
+# Print results
+cat("H4a: GPT-4.5 (no-persona) vs ELIZA\n")
+cat("------------------------------------------------------\n")
+print(summary(h4a1_model))
+
+# With persona prompt
+h4a2_model <- glm(
+  success ~ ai_model, 
+  family = "binomial",
+  data = games %>% 
+    filter(ai_model %in% c("gpt-4.5_quinn_prolific", "eliza_prolific"))
+)
+
+# Print results
+cat("\nH4a: GPT-4.5 (persona) vs ELIZA\n")
+cat("------------------------------------------------------\n")
+print(summary(h4a2_model))
+
+# Extract key statistics and interpret
+models <- list(
+  list(
+    name = "GPT-4.5 (no-persona) vs ELIZA", 
+    model = h4a1_model,
+    coef_name = names(coef(h4a1_model))[2]
+  ),
+  list(
+    name = "GPT-4.5 (persona) vs ELIZA",
+    model = h4a2_model,
+    coef_name = names(coef(h4a2_model))[2]
+  )
+)
+
+for (m in models) {
+  coef_val <- coef(m$model)[m$coef_name]
+  p_val <- summary(m$model)$coefficients[m$coef_name, "Pr(>|z|)"]
+  
+  # Format p-value
+  if (p_val < 0.001) {
+    p_display <- "p < 0.001"
+  } else if (p_val < 0.01) {
+    p_display <- paste0("p = ", format(round(p_val, 3), nsmall = 3))
+  } else {
+    p_display <- paste0("p = ", format(round(p_val, 2), nsmall = 2))
+  }
+  
+  cat("\nFor", m$name, ":\n")
+  if (p_val < 0.05) {
+    if (coef_val > 0) {
+      cat(paste0("**", gsub(" vs ELIZA", "", m$name), " significantly outperforms ELIZA. (", p_display, ")**\n"))
+    } else {
+      cat(paste0("**", gsub(" vs ELIZA", "", m$name), " performs significantly worse than ELIZA. (", p_display, ")**\n"))
+    }
+  } else {
+    cat(paste0("There is no significant difference between ", gsub(" vs ELIZA", "", m$name), " and ELIZA. (", p_display, ")\n"))
+  }
+}
+```
+
+## H4b: Llama vs ELIZA
+
+```{r}
+# With no-persona prompt
+h4b1_model <- glm(
+  success ~ ai_model, 
+  family = "binomial",
+  data = games %>% 
+    filter(ai_model %in% c("llama-405b_minimal_prolific", "eliza_prolific"))
+)
+
+# Print results
+cat("H4b: Llama (no-persona) vs ELIZA\n")
+cat("------------------------------------------------------\n")
+print(summary(h4b1_model))
+
+# With persona prompt
+h4b2_model <- glm(
+  success ~ ai_model, 
+  family = "binomial",
+  data = games %>% 
+    filter(ai_model %in% c("llama-405b_quinn_prolific", "eliza_prolific"))
+)
+
+# Print results
+cat("\nH4b: Llama (persona) vs ELIZA\n")
+cat("------------------------------------------------------\n")
+print(summary(h4b2_model))
+
+# Extract key statistics and interpret
+models <- list(
+  list(
+    name = "Llama (no-persona) vs ELIZA", 
+    model = h4b1_model,
+    coef_name = names(coef(h4b1_model))[2]
+  ),
+  list(
+    name = "Llama (persona) vs ELIZA",
+    model = h4b2_model,
+    coef_name = names(coef(h4b2_model))[2]
+  )
+)
+
+for (m in models) {
+  coef_val <- coef(m$model)[m$coef_name]
+  p_val <- summary(m$model)$coefficients[m$coef_name, "Pr(>|z|)"]
+  
+  # Format p-value
+  if (p_val < 0.001) {
+    p_display <- "p < 0.001"
+  } else if (p_val < 0.01) {
+    p_display <- paste0("p = ", format(round(p_val, 3), nsmall = 3))
+  } else {
+    p_display <- paste0("p = ", format(round(p_val, 2), nsmall = 2))
+  }
+  
+  cat("\nFor", m$name, ":\n")
+  if (p_val < 0.05) {
+    if (coef_val > 0) {
+      cat(paste0("**", gsub(" vs ELIZA", "", m$name), " significantly outperforms ELIZA. (", p_display, ")**\n"))
+    } else {
+      cat(paste0("**", gsub(" vs ELIZA", "", m$name), " performs significantly worse than ELIZA. (", p_display, ")**\n"))
+    }
+  } else {
+    cat(paste0("There is no significant difference between ", gsub(" vs ELIZA", "", m$name), " and ELIZA. (", p_display, ")\n"))
+  }
+}
+```
+
+## H4c: GPT-4o vs ELIZA
+
+```{r}
+# Check if GPT-4o data exists in the dataset
+
+h4c_model <- glm(
+  success ~ ai_model, 
+  family = "binomial",
+  data = games %>% 
+    filter(ai_model %in% c("gpt-4o_minimal_prolific", "eliza_prolific"))
+)
+
+# Print results
+cat("H4c: GPT-4o vs ELIZA\n")
+cat("------------------------------------------------------\n")
+print(summary(h4c_model))
+
+# Extract key statistics and interpret
+coef_val <- coef(h4c_model)[2]  # Assuming the second coefficient is for GPT-4o
+p_val <- summary(h4c_model)$coefficients[2, "Pr(>|z|)"]
+
+# Format p-value
+if (p_val < 0.001) {
+  p_display <- "p < 0.001"
+} else if (p_val < 0.01) {
+  p_display <- paste0("p = ", format(round(p_val, 3), nsmall = 3))
+} else {
+  p_display <- paste0("p = ", format(round(p_val, 2), nsmall = 2))
+}
+  
+cat("\nFor GPT-4o vs ELIZA:\n")
+if (p_val < 0.05) {
+  if (coef_val > 0) {
+    cat(paste0("**GPT-4o significantly outperforms ELIZA. (", p_display, ")**\n"))
+  } else {
+    cat(paste0("**GPT-4o performs significantly worse than ELIZA. (", p_display, ")**\n"))
+  }
+} else {
+  cat(paste0("There is no significant difference between GPT-4o and ELIZA. (", p_display, ")\n"))
+}
+```
+
+## Summary of H4 Results
+
+```{r}
+# Create a summary table of all H4 results if all models were tested
+if (exists("h4a1_model") && exists("h4a2_model") && exists("h4b1_model") && exists("h4b2_model")) {
+  h4_models <- list(
+    list(name = "GPT-4.5 (no-persona) vs ELIZA", model = h4a1_model, coef_index = 2),
+    list(name = "GPT-4.5 (persona) vs ELIZA", model = h4a2_model, coef_index = 2),
+    list(name = "Llama (no-persona) vs ELIZA", model = h4b1_model, coef_index = 2),
+    list(name = "Llama (persona) vs ELIZA", model = h4b2_model, coef_index = 2)
+  )
+  
+  # Add GPT-4o if available
+  if (exists("h4c_model")) {
+    h4_models <- c(h4_models, list(list(name = "GPT-4o vs ELIZA", model = h4c_model, coef_index = 2)))
+  }
+  
+  # Extract results
+  h4_summary <- data.frame(
+    Comparison = sapply(h4_models, function(m) m$name),
+    Coefficient = sapply(h4_models, function(m) coef(m$model)[m$coef_index]),
+    p_value = sapply(h4_models, function(m) summary(m$model)$coefficients[m$coef_index, "Pr(>|z|)"])
+  )
+  
+  # Format and print
+  h4_summary %>%
+    mutate(
+      Odds_Ratio = exp(Coefficient),
+      Coefficient = round(Coefficient, 3),
+      Odds_Ratio = round(Odds_Ratio, 3),
+      p_value_display = sapply(p_value, format_pvalue),
+      Significant = ifelse(p_value < 0.05, "**Significant**", "Not Significant")
+    ) %>%
+    select(Comparison, Coefficient, Odds_Ratio, p_value_display, Significant) %>%
+    rename(`P-value` = p_value_display) %>%
+    knitr::kable(caption = "Summary of H4 Tests (Modern LLMs vs ELIZA)")
+}
+```
+
+# H5: LLMs with persona judged human more often than humans
+
+## H5a: GPT-4.5 with persona prompt
+
+```{r}
+h5a_results <- run_binomial_test(
+  games %>% filter(ai_model == "gpt-4.5_quinn_prolific"),
+  "H5a", 
+  "Testing if GPT-4.5 with persona is judged human more often than humans (success < 0.5)"
+)
+```
+
+## H5b: Llama with persona prompt
+
+```{r}
+h5b_results <- run_binomial_test(
+  games %>% filter(ai_model == "llama-405b_quinn_prolific"),
+  "H5b", 
+  "Testing if Llama with persona is judged human more often than humans (success < 0.5)"
+)
+```
+
+
+
+## Summary of H5 Results
+
+```{r}
+
+h5.pvals.corrected = p.adjust(c(h5a_results$p_value, h5b_results$p_value), method="fdr")
+
+# Summarize H5 results
+h5_summary <- data.frame(
+  Hypothesis = c("H5a: GPT-4.5 (persona)", "H5b: Llama (persona)"),
+  Accuracy = c(h5a_results$success_prob, h5b_results$success_prob),
+  p_value = c(h5a_results$p_value, h5b_results$p_value),
+  p_value_corrected = h5.pvals.corrected,
+  Significant = c(h5a_results$significant, h5b_results$significant)
+)
+
+# Print summary table
+h5_summary %>%
+  mutate(
+    Accuracy = round(Accuracy, 3),
+    p_value_display = sapply(p_value, format_pvalue),
+    p_value_corrected = sapply(p_value_corrected, format_pvalue),
+    Significance = ifelse(Significant & Accuracy < 0.5, 
+                         "**AI judged more human than humans**", 
+                         "Not significant")
+  ) %>%
+  select(Hypothesis, Accuracy, p_value_display, p_value_corrected, Significance) %>%
+  rename(`P-value` = p_value_display, `P-value (corrected)` = p_value_corrected) %>%
+  knitr::kable(caption = "Summary of H5 Tests")
+```
+
+# H6: LLMs without persona judged human more often than humans
+
+## H6a: GPT-4.5 with minimal prompt
+
+```{r}
+h6a_results <- run_binomial_test(
+  games %>% filter(ai_model == "gpt-4.5_minimal_prolific"),
+  "H6a", 
+  "Testing if GPT-4.5 with minimal prompt is judged human more often than humans (success < 0.5)"
+)
+```
+
+## H6b: Llama with minimal prompt
+
+```{r}
+h6b_results <- run_binomial_test(
+  games %>% filter(ai_model == "llama-405b_minimal_prolific"),
+  "H6b", 
+  "Testing if Llama with minimal prompt is judged human more often than humans (success < 0.5)"
+)
+```
+
+## Summary of H6 Results
+
+```{r}
+
+
+h6.pvals.corrected = p.adjust(c(h6a_results$p_value, h6b_results$p_value), method="fdr")
+
+# Summarize H6 results
+h6_summary <- data.frame(
+  Hypothesis = c("H6a: GPT-4.5 (no-persona)", "H6b: Llama (no-persona)"),
+  Accuracy = c(h6a_results$success_prob, h6b_results$success_prob),
+  p_value = c(h6a_results$p_value, h6b_results$p_value),
+  p_value_corrected = h6.pvals.corrected,
+  Significant = c(h6a_results$significant, h6b_results$significant)
+)
+
+# Print summary table
+h6_summary %>%
+  mutate(
+    Accuracy = round(Accuracy, 3),
+    p_value_display = sapply(p_value, format_pvalue),
+    p_value_corrected = sapply(p_value_corrected, format_pvalue),
+    Significance = ifelse(Significant & Accuracy < 0.5, 
+                         "**AI judged more human than humans**", 
+                         "Not significant")
+  ) %>%
+  select(Hypothesis, Accuracy, p_value_display, p_value_corrected, Significance) %>%
+  rename(`P-value` = p_value_display, `P-value (corrected)` = p_value_corrected) %>%
+  knitr::kable(caption = "Summary of H6 Tests")
+```
+
+# Additional Analyses
+
+## Non-inferiority Testing for H1 and H3
+
+As specified in our pre-registration, we conduct non-inferiority testing to test whether model pass rates are significantly above a threshold of 0.35.
+
+```{r}
+# Function for non-inferiority testing
+run_noninf_test <- function(data_filtered, hypothesis_name, condition_desc, threshold = 0.35) {
+  model <- glm(success ~ 1, family = "binomial", data = data_filtered %>% mutate(success = ifelse(success, 0, 1)))
+  coef_est <- coef(model)[1]
+  se <- sqrt(diag(vcov(model)))[1]
+  
+  # Convert from logit to probability scale
+  prob_est <- plogis(coef_est)
+  
+  # Calculate one-sided confidence interval
+  logit_threshold <- log(threshold / (1 - threshold))
+  z_score <- 1.645  # One-sided 95% CI
+  margin <- z_score * se
+  
+  # Test if lower bound of CI exceeds threshold
+  lower_bound_logit <- coef_est - margin
+  lower_bound_prob <- plogis(lower_bound_logit)
+  
+  noninferior <- lower_bound_logit > logit_threshold
+  
+  # Print results
+  cat("------------------------------------------------------\n")
+  cat(paste0(hypothesis_name, " (Non-inferiority test): ", condition_desc, "\n"))
+  cat("------------------------------------------------------\n")
+  cat("Estimated success probability:", round(prob_est, 3), "\n")
+  cat("Non-inferiority threshold:", threshold, "\n")
+  cat("Lower bound of one-sided 95% CI:", round(lower_bound_prob, 3), "\n")
+  
+  if (noninferior) {
+    cat(paste0("**Result: The model's performance is significantly above the threshold of ", threshold, "**\n\n"))
+  } else {
+    cat(paste0("Result: Cannot conclude that the model's performance is significantly above the threshold of ", threshold, "\n\n"))
+  }
+  
+  return(list(
+    prob_est = prob_est,
+    lower_bound = lower_bound_prob,
+    noninferior = noninferior
+  ))
+}
+
+# Apply non-inferiority tests for H1 and H3
+# H1b: Llama with persona
+h1b_noninf <- run_noninf_test(
+  games.persona.first %>% filter(ai_model == "llama-405b_quinn_prolific"),
+  "H1b", 
+  "Testing if Llama with persona is non-inferior to threshold"
+)
+
+# H1c: GPT-4.5 with persona
+h1c_noninf <- run_noninf_test(
+  games.persona.first %>% filter(ai_model == "gpt-4.5_quinn_prolific"),
+  "H1c", 
+  "Testing if GPT-4.5 with persona is non-inferior to threshold"
+)
+
+# H3a: GPT-4.5 with minimal prompt
+h3a_noninf <- run_noninf_test(
+  games %>% filter(ai_model == "gpt-4.5_minimal_prolific"),
+  "H3a", 
+  "Testing if GPT-4.5 with minimal prompt is non-inferior to threshold"
+)
+
+# H3b: Llama with minimal prompt
+h3b_noninf <- run_noninf_test(
+  games %>% filter(ai_model == "llama-405b_minimal_prolific"),
+  "H3b", 
+  "Testing if Llama with minimal prompt is non-inferior to threshold"
+)
+
+# Summarize non-inferiority tests
+noninf_summary <- data.frame(
+  Hypothesis = c("H1b: Llama (persona)", "H1c: GPT-4.5 (persona)",
+                "H3a: GPT-4.5 (no-persona)", "H3b: Llama (no-persona)"),
+  Success_Rate = c(h1b_noninf$prob_est, h1c_noninf$prob_est,
+                  h3a_noninf$prob_est, h3b_noninf$prob_est),
+  Lower_Bound = c(h1b_noninf$lower_bound, h1c_noninf$lower_bound,
+                 h3a_noninf$lower_bound, h3b_noninf$lower_bound),
+  Non_Inferior = c(h1b_noninf$noninferior, h1c_noninf$noninferior,
+                  h3a_noninf$noninferior, h3b_noninf$noninferior)
+)
+
+# Print summary table
+noninf_summary %>%
+  mutate(
+    Success_Rate = round(Success_Rate, 3),
+    Lower_Bound = round(Lower_Bound, 3),
+    Conclusion = ifelse(Non_Inferior, 
+                       "**Non-inferior to threshold**", 
+                       "Not established as non-inferior")
+  ) %>%
+  select(Hypothesis, Success_Rate, Lower_Bound, Conclusion) %>%
+  knitr::kable(caption = "Summary of Non-inferiority Tests (threshold = 0.35)")
+```
+
+## Bayesian Analysis for H1 and H3
+
+```{r warning=FALSE}
+# Add this at the beginning of your Bayesian analysis chunk
+# Suppress compilation messages
+suppressMessages({
+  suppressWarnings({
+    invisible(capture.output({
+      library(brms)
+    }))
+  })
+})
+
+# Function to run Bayesian analysis with extra suppression
+run_bayesian_test <- function(data_filtered, hypothesis_name, condition_desc) {
+  # Using weakly informative priors
+  prior <- c(set_prior("normal(0, 1.5)", class = "Intercept"))
+  
+  # Capture and suppress all output during model fitting
+  invisible(capture.output({
+    suppressMessages({
+      suppressWarnings({
+        # Fit Bayesian model
+        model <- brm(
+          success ~ 1,
+          data = data_filtered,
+          family = bernoulli(),
+          prior = prior,
+          chains = 4,
+          iter = 2000,
+          warmup = 1000,
+          seed = 123,
+          silent = 2,
+          refresh = 0
+        )
+      })
+    })
+  }))
+  
+  # Extract posterior samples
+  posterior <- posterior_samples(model)
+  intercept_samples <- posterior$b_Intercept
+  prob_samples <- plogis(intercept_samples)
+  
+  # Calculate 95% CI
+  ci <- quantile(prob_samples, probs = c(0.025, 0.975))
+  
+  # Calculate probability that true success rate > 0.5
+  prob_above_chance <- mean(prob_samples > 0.5)
+  prob_below_chance <- mean(prob_samples < 0.5)
+  
+  # Print results
+  cat("------------------------------------------------------\n")
+  cat(paste0(hypothesis_name, " (Bayesian analysis): ", condition_desc, "\n"))
+  cat("------------------------------------------------------\n")
+  cat("Estimated success probability:", round(mean(prob_samples), 3), "\n")
+  cat("95% credible interval:", round(ci[1], 3), "to", round(ci[2], 3), "\n")
+  cat("Probability that true success rate > 0.5:", round(prob_above_chance, 3), "\n")
+  cat("Probability that true success rate < 0.5:", round(prob_below_chance, 3), "\n\n")
+  
+  # Test if CI includes 0.5
+  includes_chance <- ci[1] <= 0.5 && ci[2] >= 0.5
+  
+  if (includes_chance) {
+    cat("Result: The 95% credible interval includes 0.5, suggesting the model's performance is not significantly different from chance.\n\n")
+  } else if (ci[1] > 0.5) {
+    cat("**Result: The 95% credible interval is entirely above 0.5, suggesting the model performs significantly worse than chance.**\n\n")
+  } else {
+    cat("**Result: The 95% credible interval is entirely below 0.5, suggesting the model performs significantly better than chance.**\n\n")
+  }
+  
+  return(list(
+    mean_prob = mean(prob_samples),
+    ci = ci,
+    prob_above_chance = prob_above_chance,
+    prob_below_chance = prob_below_chance,
+    includes_chance = includes_chance
+  ))
+}
+
+# Run Bayesian analyses for key hypotheses
+# H1a: ELIZA (manipulation check)
+h1a_bayes <- run_bayesian_test(
+  games %>% filter(ai_model == "eliza_prolific"),
+  "H1a", 
+  "Bayesian test for ELIZA detectability"
+)
+
+# H1b: Llama with persona
+h1b_bayes <- run_bayesian_test(
+  games.persona.first %>% filter(ai_model == "llama-405b_quinn_prolific"),
+  "H1b", 
+  "Bayesian test for Llama with persona detectability"
+)
+
+# H1c: GPT-4.5 with persona
+h1c_bayes <- run_bayesian_test(
+  games.persona.first %>% filter(ai_model == "gpt-4.5_quinn_prolific"),
+  "H1c", 
+  "Bayesian test for GPT-4.5 with persona detectability"
+)
+
+# H3a: GPT-4.5 with minimal prompt
+h3a_bayes <- run_bayesian_test(
+  games %>% filter(ai_model == "gpt-4.5_minimal_prolific"),
+  "H3a", 
+  "Bayesian test for GPT-4.5 with minimal prompt detectability"
+)
+
+# H3b: Llama with minimal prompt
+h3b_bayes <- run_bayesian_test(
+  games %>% filter(ai_model == "llama-405b_minimal_prolific"),
+  "H3b", 
+  "Bayesian test for Llama with minimal prompt detectability"
+)
+
+# Summarize Bayesian analyses
+bayes_summary <- data.frame(
+  Hypothesis = c("H1a: ELIZA", "H1b: Llama (persona)", "H1c: GPT-4.5 (persona)",
+                "H3a: GPT-4.5 (no-persona)", "H3b: Llama (no-persona)"),
+  Success_Rate = c(h1a_bayes$mean_prob, h1b_bayes$mean_prob, h1c_bayes$mean_prob,
+                  h3a_bayes$mean_prob, h3b_bayes$mean_prob),
+  CI_Lower = c(h1a_bayes$ci[1], h1b_bayes$ci[1], h1c_bayes$ci[1],
+              h3a_bayes$ci[1], h3b_bayes$ci[1]),
+  CI_Upper = c(h1a_bayes$ci[2], h1b_bayes$ci[2], h1c_bayes$ci[2],
+              h3a_bayes$ci[2], h3b_bayes$ci[2]),
+  Includes_Chance = c(h1a_bayes$includes_chance, h1b_bayes$includes_chance, 
+                     h1c_bayes$includes_chance, h3a_bayes$includes_chance,
+                     h3b_bayes$includes_chance)
+)
+
+# Print summary table
+bayes_summary %>%
+  mutate(
+    Success_Rate = round(Success_Rate, 3),
+    CI_Lower = round(CI_Lower, 3),
+    CI_Upper = round(CI_Upper, 3),
+    Conclusion = ifelse(Includes_Chance, 
+                       "Not different from chance", 
+                       ifelse(CI_Lower > 0.5,
+                             "**Worse than chance**",
+                             "**Better than chance**"))
+  ) %>%
+  select(Hypothesis, Success_Rate, CI_Lower, CI_Upper, Conclusion) %>%
+  rename(`95% CI Lower` = CI_Lower, `95% CI Upper` = CI_Upper) %>%
+  knitr::kable(caption = "Summary of Bayesian Analyses")
+```
+
+# Demographics
+
+## Familiarity with GPT
+
+```{r}
+# Effect of LLM knowledge on detection accuracy
+if ("familiarity_with_GPT" %in% names(games)) {
+  llm_knowledge_model <- glm(
+    success ~ familiarity_with_GPT, 
+    family = "binomial",
+    data = games
+  )
+  
+  cat("Effect of LLM knowledge on detection accuracy\n")
+  cat("------------------------------------------------------\n")
+  print(summary(llm_knowledge_model))
+  
+  # Visualize
+  games %>%
+    group_by(familiarity_with_GPT) %>%
+    summarize(
+      accuracy = mean(success),
+      se = sqrt(accuracy * (1 - accuracy) / n()),
+      n = n(),
+      .groups = "drop"
+    ) %>%
+    ggplot(aes(x = factor(familiarity_with_GPT), y = accuracy)) +
+    geom_bar(stat = "identity", fill = "lightblue") +
+    geom_errorbar(
+      aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+      width = 0.2
+    ) +
+    geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+    labs(
+      x = "LLM Knowledge Level",
+      y = "Detection Accuracy",
+      title = "Effect of LLM Knowledge on Detection Accuracy"
+    ) +
+    theme_minimal() +
+    scale_x_discrete(labels = c("None", "Some", "High", "Research")) +
+    scale_y_continuous(limits = c(0, 1))
+}
+```
+
+## Chatbot Interaction Frequency
+
+
+```{r}
+# Effect of Chatbot Interaction frequency on detection accuracy
+
+chatbot_interaction_frequency_model <- glm(
+  success ~ familiarity_with_GPT, 
+  family = "binomial",
+  data = games
+)
+
+cat("Effect of Chatbot interaction frequency on detection accuracy\n")
+cat("-------------------------------------------------------------\n")
+print(summary(chatbot_interaction_frequency_model))
+
+# Visualize
+games %>%
+  group_by(chatbot_interaction_frequency) %>%
+  filter(chatbot_interaction_frequency > 0) %>%
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = factor(chatbot_interaction_frequency), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbar(
+    aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Chatbot Interaction Frequency",
+    y = "Detection Accuracy",
+    title = "Effect of CIF on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  scale_x_discrete(labels = c("None", "Some", "High", "Research")) +
+  scale_y_continuous(limits = c(0, 1))
+```
+
+## Gender
+
+```{r}
+
+# Effect of gender on detection accuracy
+if ("gender" %in% names(games)) {
+  gender_model <- glm(
+    success ~ gender, 
+    family = "binomial",
+    data = games %>% filter(gender %in% c("M", "F", "N"))
+  )
+  
+  cat("\nEffect of gender on detection accuracy\n")
+  cat("------------------------------------------------------\n")
+  print(summary(gender_model))
+  
+  # Visualize
+  games %>%
+    filter(gender %in% c("M", "F", "N")) %>%
+    group_by(gender) %>%
+    summarize(
+      accuracy = mean(success),
+      se = sqrt(accuracy * (1 - accuracy) / n()),
+      n = n(),
+      .groups = "drop"
+    ) %>%
+    ggplot(aes(x = factor(gender), y = accuracy)) +
+    geom_bar(stat = "identity", fill = "lightblue") +
+    geom_errorbar(
+      aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+      width = 0.2
+    ) +
+    geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+    labs(
+      x = "Gender",
+      y = "Detection Accuracy",
+      title = "Effect of Gender on Detection Accuracy"
+    ) +
+    theme_minimal() +
+    scale_x_discrete(labels = c("F", "M", "N.B.")) +
+    scale_y_continuous(limits = c(0, 1))
+}
+```
+
+
+## Education
+
+```{r}
+
+# Effect of education on detection accuracy
+education_model <- glm(
+  success ~ education, 
+  family = "binomial",
+  data = games %>% filter(education > 0)
+)
+
+cat("\nEffect of Education on detection accuracy\n")
+cat("------------------------------------------------------\n")
+print(summary(education_model))
+
+# Visualize
+games %>%
+  filter(education > 0) %>%
+  group_by(education) %>%
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = factor(education), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbar(
+    aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Education",
+    y = "Detection Accuracy",
+    title = "Effect of Education on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  scale_x_discrete(labels = c("HS", "UG", "PG")) +
+  scale_y_continuous(limits = c(0, 1))
+```
+
+## Age
+
+```{r}
+
+# Effect of age on detection accuracy
+if ("age" %in% names(games)) {
+  age_model <- glm(
+    success ~ age, 
+    family = "binomial",
+    data = games %>% filter(age > 0, age < 100)
+  )
+  
+  cat("\nEffect of age on detection accuracy\n")
+  cat("------------------------------------------------------\n")
+  print(summary(age_model))
+  
+  # Visualize
+  games %>%
+    filter(age > 0, age < 100) %>%
+    ggplot(aes(x = age, y = as.numeric(success))) +
+    geom_smooth(method = "glm", formula = "y ~ x", 
+                method.args = list(family = "binomial"),
+                color = "blue", fill = "lightblue") +
+    geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+    labs(
+      x = "Age",
+      y = "Detection Accuracy",
+      title = "Effect of Age on Detection Accuracy"
+    ) +
+    theme_minimal() +
+    scale_y_continuous(limits = c(0, 1))
+}
+
+```
+
+## Trial index
+
+```{r}
+
+# Effect of trial number on detection accuracy
+trial_model <- glm(
+  success ~ interrogator_game_index, 
+  family = "binomial",
+  data = games
+)
+
+cat("\nEffect of trial number on detection accuracy\n")
+cat("------------------------------------------------------\n")
+print(summary(trial_model))
+
+# Visualize
+games %>%
+  group_by(interrogator_game_index) %>%
+  filter(interrogator_game_index <= 8) %>%  # Limit to reasonable number of trials
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = interrogator_game_index, y = accuracy)) +
+  geom_point(size = 3) +
+  geom_line() +
+  geom_errorbar(
+    aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Trial Number",
+    y = "Detection Accuracy",
+    title = "Effect of Trial Number on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = seq(1, 8, by = 1)) +
+  scale_y_continuous(limits = c(0, 1))
+```
+
+## AI Intelligence
+
+
+```{r}
+# Effect of AI Intelligence frequency on detection accuracy
+
+intelligence_model <- glm(
+  success ~ intelligence, 
+  family = "binomial",
+  data = games %>% filter(intelligence > 0)
+)
+
+cat("Effect of AI intelligence on detection accuracy\n")
+cat("-------------------------------------------------------------\n")
+print(summary(intelligence_model))
+
+# Visualize
+games %>%
+  group_by(intelligence) %>%
+  filter(intelligence > 0) %>%
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = factor(intelligence), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbar(
+    aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "AI Intelligence",
+    y = "Detection Accuracy",
+    title = "Effect of AI Intelligence on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  # scale_x_discrete(labels = c("Low", "Medium", "High")) +
+  scale_y_continuous(limits = c(0, 1))
+
+
+
+```
+
+## AI Emotion
+
+```{r}
+
+# Effect of AI Emotion frequency on detection accuracy
+
+emotion_model <- glm(
+  success ~ emotion, 
+  family = "binomial",
+  data = games %>% filter(emotion > 0)
+)
+
+cat("Effect of AI emotion on detection accuracy\n")
+cat("-------------------------------------------------------------\n")
+print(summary(emotion_model))
+
+# Visualize
+games %>%
+  group_by(emotion) %>%
+  filter(emotion > 0) %>%
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = factor(emotion), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbar(
+    aes(ymin = accuracy - 1.96 * se, ymax = accuracy + 1.96 * se),
+    width = 0.2
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "AI Emotion",
+    y = "Detection Accuracy",
+    title = "Effect of AI Emotion on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  # scale_x_discrete(labels = c("Low", "Medium", "High")) +
+  scale_y_continuous(limits = c(0, 1))
+```
+
+
+## Accuracy Estimate
+
+```{r}
+
+# Effect of accuracy estimate frequency on detection accuracy
+
+accuracy_estimate_model <- glm(
+  success ~ accuracy_estimate, 
+  family = "binomial",
+  data = games %>%
+    group_by(
+      interrogator_user_id
+    ) %>%
+    mutate(
+      n_games = n(),
+      accuracy_estimate = pmin(n_games, accuracy_estimate),
+      accuracy_estimate = accuracy_estimate / n_games
+    )
+)
+
+cat("Effect of accuracy estimate on detection accuracy\n")
+cat("-------------------------------------------------------------\n")
+print(summary(accuracy_estimate_model))
+
+# Visualize
+games %>%
+  group_by(
+      interrogator_user_id
+    ) %>%
+    mutate(
+      n_games = n(),
+      accuracy_estimate = pmin(n_games, accuracy_estimate),
+      accuracy_estimate = accuracy_estimate / n_games,
+      .groups="drop"
+    ) %>%
+  group_by(accuracy_estimate) %>%
+  # filter(accuracy_estimate > 0) %>%
+  summarize(
+    accuracy = mean(success),
+    se = sqrt(accuracy * (1 - accuracy) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = accuracy_estimate, y = accuracy)) +
+  geom_smooth(method = "lm", formula = "y ~ x",
+              color = "blue", fill = "lightblue") +
+  stat_summary_bin(fun = mean, geom = "point", size = 2) +
+  stat_summary_bin(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Accuracy Estimate",
+    y = "Detection Accuracy",
+    title = "Effect of Accuracy Estimate on Detection Accuracy"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 1))
+
+```
+
+```
+
+

@@ -1,0 +1,27 @@
+id,name,description,category,code,is_active,created,updated
+2,Daily activities,Asking about day (what have you been up to?),Small Talk,1b,True,2023-10-19 00:34:54.385299+00:00,2023-10-25 02:56:31.667088+00:00
+3,Weather,Asking about the weather,Situational Awareness,2a,True,2023-10-19 00:37:15.624730+00:00,2023-10-25 02:56:54.661236+00:00
+4,Are you a bot / human?,Directly asking,Direct,3a,True,2023-10-19 00:38:43.062532+00:00,2023-11-22 06:13:55.357294+00:00
+5,Time,Asking about the time,Situational Awareness,2b,True,2023-10-19 00:39:38.824445+00:00,2023-10-25 02:57:35.423756+00:00
+8,Accusation,Accuses of being a bot,Direct,3b,True,2023-10-19 00:48:10.991313+00:00,2023-10-25 03:17:01.400056+00:00
+9,Current event,Asking about news or recent events (that LLMs might not have access to). E.g. who is the current president?,Knowledge & Reasoning,4b,True,2023-10-19 00:49:31.137756+00:00,2023-10-26 20:59:08.567361+00:00
+10,Strings,String manipulation. E.g. Can you say rickroll backwards etc,Knowledge & Reasoning,4c,True,2023-10-19 00:50:31.588124+00:00,2023-10-26 19:40:31.777678+00:00
+11,Surroundings,E.g. what's outside the window? What is at the bottom right of the screen?,Situational Awareness,2c,True,2023-10-19 00:51:47.800661+00:00,2023-10-26 19:39:38.016602+00:00
+12,Game aware,Asks about experience of the test itself (e.g. have you been the interrogator before?),Situational Awareness,2d,True,2023-10-19 00:53:28.725489+00:00,2023-10-26 19:39:56.884039+00:00
+13,Personal details,"Asking about personal details (e.g. ""where do you live?"" ""what do you do for work/fun?"")",Small Talk,1c,True,2023-10-19 00:54:06.708299+00:00,2023-10-26 20:49:38.631201+00:00
+14,Emotion,"Asks about human beliefs, desires, goals.",Social & Emotional,5a,True,2023-10-19 00:54:55.158240+00:00,2023-10-25 03:01:10.750172+00:00
+15,Logic & Math,Asks a logical question (e.g. syllogism) or a math question (e.g. 'what is 4 * 28?'),Knowledge & Reasoning,4d,True,2023-10-19 02:31:15.055136+00:00,2024-03-04 20:50:37.854490+00:00
+16,Scenario or Game,Asks the witness to respond to an invented scenario or game.,Knowledge & Reasoning,4e,True,2023-10-19 02:33:13.029791+00:00,2024-03-04 20:52:15.633454+00:00
+17,Gen Knowledge,"General questions, common sense (e.g. what color is an apple, how tall is the Eiffel tower?)",Knowledge & Reasoning,4f,True,2023-10-19 02:37:13.279618+00:00,2023-10-26 19:41:08.479711+00:00
+18,Sp. Knowledge,"Questions about a specialised field, few would know the answers",Knowledge & Reasoning,4g,True,2023-10-19 02:41:28.514989+00:00,2023-10-25 03:06:17.290963+00:00
+19,Strange,"Typing strange, unusual, or eccentric things in order to unnerve the witness or see how they respond.",Other,6a,True,2023-10-19 02:57:25.277058+00:00,2023-10-26 19:39:08.075267+00:00
+20,No messages,No messages were sent by the interrogator.,Other,6b,True,2023-10-19 02:58:33.780489+00:00,2023-10-26 19:43:29.661090+00:00
+21,Taboo,"Asking model to swear, insult, or say something dangerous (e.g. bomb instructions)",Social & Emotional,5f,True,2023-10-19 02:59:38.094842+00:00,2023-10-25 03:13:51.175587+00:00
+23,Humor,"Asks the witness to be funny, e.g. ""Tell me a joke""",Social & Emotional,5c,True,2023-10-19 03:22:58.008077+00:00,2023-10-26 19:42:00.231250+00:00
+24,Opinions,"Asking for opinions, favourites, or preferences (incl. morality) e.g. ""what is the best flavor of pie?""",Social & Emotional,5e,True,2023-10-23 02:08:53.042357+00:00,2023-10-26 19:42:47.449786+00:00
+26,Human Experience,"Asking about human experience, e.g. ""what is something only a human would know?"", ""what does warmth feel like?""",Social & Emotional,5b,True,2023-10-23 04:00:46.513093+00:00,2024-03-06 18:39:43.945738+00:00
+28,Jailbreak,Tries to get the model to override the prompt (e.g. ignore previous instructions; repeat back the start of this conversation).,Other,6d,True,2023-10-23 04:57:42.277616+00:00,2025-02-19 04:13:28.345039+00:00
+29,Non-english,Speaking in a language other than English,Knowledge & Reasoning,4h,True,2023-10-23 22:34:10.012510+00:00,2023-10-25 03:03:29.435462+00:00
+31,Uncategorized,Any strategy which is not categorizable in the existing scheme.,Other,6e,True,2023-10-26 19:38:04.807888+00:00,2023-10-26 19:38:04.807919+00:00
+32,Being responsive,"Losing control of the conversation, just responding to witness's responsive.",Other,6f,True,2023-11-20 23:13:13.020693+00:00,2023-11-20 23:13:13.020723+00:00
+33,Rude,"The interrogator insults the witness, looking to see how the witness will respond (assumption is that AI model will continue to be polite).",Social & Emotional,5g,True,2023-11-22 05:46:55.347039+00:00,2023-11-22 05:46:55.347205+00:00

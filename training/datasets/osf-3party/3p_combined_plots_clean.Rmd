@@ -1,0 +1,2310 @@
+---
+title: "3P Turing Test: Combined Plots"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: true
+    theme: flatly
+    highlight: kate
+    code_folding: hide
+---
+
+# Setup
+
+Library imports
+
+```{r message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(tidytext)
+library(janitor)
+library(RColorBrewer)
+library(scales)
+library(xtable)
+library(lmerTest)
+library(brms)
+library(cowplot)
+library(ggpubr)
+library(kableExtra)
+
+```
+
+
+Load data
+
+```{r  message=FALSE, warning=FALSE}
+
+game <- read.csv("data/tt_game.csv")
+verdict <- read.csv("data/tt_verdict.csv")
+interrogator <- read.csv("data/tt_interrogator.csv")
+witness <- read.csv("data/tt_witness.csv")
+message <- read.csv("data/tt_message_anonymized.csv")
+profile <- read.csv("data/tt_profile.csv")
+model <- read.csv("data/tt_aimodel.csv")
+conversation <-  read.csv("data/tt_conversation.csv")
+
+
+```
+
+
+## Games
+
+```{r  message=FALSE, warning=FALSE}
+
+# Get profile, ai_model
+games.all <- game %>%
+  
+  # Preprocessing
+  mutate(
+    created_at = as.POSIXct(created_at, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    finished_at = as.POSIXct(finished_at, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    day = lubridate::floor_date(created_at, "day"),
+    duration = as.numeric(difftime(finished_at, created_at, units = "secs"))
+  ) %>%
+  
+  # Verdict
+  merge(
+    verdict %>%
+      group_by(game_id) %>%
+      mutate(
+        verdict_rank = row_number(desc(id))
+      ) %>%
+      filter(verdict_rank == 1) %>%
+      rename("verdict_id" = id) %>%
+      select(-interrogator_id, -verdict_rank, -created_at),
+    by.x = "id", by.y = "game_id"
+  ) %>%
+  mutate(
+    success = is_correct
+  ) %>%
+  
+  # Interrogator
+  merge(
+    interrogator %>%
+      mutate(
+        interrogator_user_id = user_id
+      ) %>%
+      select(
+        -lobby_wait_id, -user_id
+      ),
+    by.x = "interrogator_id", by.y="id"
+  )  %>%
+  
+  # Human Witness
+  merge(
+    witness %>%
+      filter(witness_type == "H") %>%
+      mutate(
+        human_witness_user_id = user_id
+      ) %>%
+      select(
+        id, human_witness_user_id
+      ),
+    by.x = "human_witness_id", by.y="id"
+  ) %>%
+  
+  # AI Witness
+  merge(
+    witness %>%
+      filter(witness_type == "A") %>%
+      select(
+        id, ai_model_id
+      ),
+    by.x = "ai_witness_id", by.y="id"
+  ) %>%
+  
+  # Interrogator Profile
+  merge(
+    profile %>%
+      select(-id),
+    by.x = "interrogator_user_id", by.y = "user_id"
+  ) %>%
+  mutate(
+    age = 2025-year_of_birth,
+    age = ifelse(age < 100 & age > 0, age, NA)
+  ) %>%
+  
+  # AI Model
+  merge(
+    model %>%
+      mutate(
+        ai_model_id = id,
+        ai_model = name
+      ) %>%
+      select(ai_model_id, ai_model, family, model_name, active),
+    all.x = TRUE, all.y = FALSE
+  ) %>%
+  # filter(
+  #   (active == "True" | is.na(active))
+  # ) %>%
+  
+  # Messages
+  # merge(
+  #   message %>%
+  #     group_by(
+  #       game_id
+  #     ) %>%
+  #     summarise(
+  #       n_messages = n(),
+  #       total_length = sum(nchar(content)),
+  #       witness_messages = sum(sender_role == "W"),
+  #       total_cost = sum(cost)
+  #     ),
+  #   by.x = "id", by.y="game_id", all.y=F, all.x=T
+  # ) %>%
+  
+  # At least one message from witness
+  # filter (
+  #   witness_messages > 0
+  # ) %>%
+  
+  # Game index
+  group_by(
+    interrogator_user_id
+  ) %>%
+  mutate(
+    interrogator_game_index = dense_rank(id)
+  ) %>%
+  ungroup() %>%
+
+  # Clean model names 
+  mutate(
+    ai_model_long = ai_model,
+    ai_model = gsub("_sona", "", ai_model),
+    ai_model = gsub("_prolific", "", ai_model)
+  )
+
+
+# Filter games
+games <- games.all
+
+
+```
+
+## Exclusions
+
+### Prior knowledge
+
+```{r}
+
+profile <- profile %>%
+  filter(user_id %in% games$interrogator_user_id)
+
+profile %>%
+  group_by(expt_aware) %>%
+  summarize(n = n())
+
+n.ppt.expt.aware <- nrow(profile %>%
+  filter(expt_aware == TRUE))
+
+profile <- profile %>%
+  filter(expt_aware == FALSE)
+
+games <- games %>%
+  filter(interrogator_user_id %in% profile$user_id)
+
+```
+
+`r n.ppt.expt.aware` Participants excluded for saying they are familiar with the site.
+
+
+### 2 messages
+
+```{r}
+
+conversation <- conversation %>%
+  filter(game_id %in% games$id)
+
+conversation <- conversation %>%
+  merge(message %>%
+          mutate(n_characters = nchar(content)) %>%
+          group_by(conversation_id) %>%
+          summarize(
+            n_messages = n(),
+            n_characters = sum(n_characters),
+            cost = sum(cost)
+            ), all.y=F, by.x="id", by.y="conversation_id")
+
+no_interaction_games <- conversation %>%
+  group_by(game_id) %>%
+  summarize(min_n_messages = min(n_messages)) %>%
+  filter(min_n_messages < 2) %>%
+  pull(game_id)
+
+# length(no_interaction_games)
+
+games <- games %>% filter(!(id %in% c(no_interaction_games)))
+
+conversation <- conversation %>%
+  filter(game_id %in% games$id)
+
+```
+
+`r length(no_interaction_games)` Games excluded for sending fewer than 2 messages.
+
+# Descriptive Stats
+
+## Summary
+
+```{r}
+
+games %>%
+  mutate(
+    duration = as.numeric(duration),
+    ai_model = as.factor(ai_model)
+  ) %>%
+  select(ai_model, duration, is_correct, confidence, interrogator_game_index) %>%
+  summary()
+
+```
+
+## No. games
+
+```{r}
+
+nrow(games)
+
+```
+
+
+## No. Models
+```{r}
+
+games %>%
+  group_by(ai_model) %>%
+  summarize(n_games = n()) %>%
+  arrange(-n_games) 
+
+```
+
+## No. Participants
+
+```{r}
+
+nrow(profile)
+
+```
+
+```{r}
+
+profile %>%
+  group_by(source) %>%
+  summarize(n_ppts = n())
+
+
+```
+
+
+## Game date
+
+
+```{r}
+
+games %>%
+  group_by(interrogator_user_id) %>%
+  summarize(created_at = max(created_at)) %>%
+  mutate(
+    day = lubridate::floor_date(created_at, "day")
+  ) %>%
+  ggplot(aes(x = day)) +
+  geom_histogram(stat="count") + 
+  theme_minimal(base_size=22)
+
+```
+
+
+## Duration
+
+
+```{r}
+
+games %>%
+  ggplot(aes(x = duration)) +
+  geom_histogram(bins=30) + 
+  theme_minimal(base_size=22) + 
+  scale_x_continuous()
+  
+
+```
+
+```{r}
+
+games %>%
+  filter(duration <= 300) %>%
+  select(duration) %>%
+  summary()
+
+```
+
+```{r}
+
+games %>%
+  filter(duration <= 300) %>%
+  mutate(
+    duration_bin = case_when(
+      duration < 120 ~ "< 2 mins",
+      duration < 300 ~ "2-5 mins",
+      T ~ "5 mins"
+    )
+  ) %>%
+  group_by(duration_bin) %>%
+  summarize(n = n(), prop = n/nrow(.))
+
+```
+
+## No. Messages
+
+```{r}
+
+conversation %>%
+  ggplot(aes(x = n_messages)) + 
+  geom_histogram() + 
+  theme_minimal()
+
+```
+
+```{r}
+
+conversation %>%
+  select(n_messages) %>%
+  summary()
+
+```
+
+## No. Characters
+
+```{r}
+
+conversation %>%
+  ggplot(aes(x = n_characters)) + 
+  geom_histogram() + 
+  theme_minimal()
+
+```
+
+```{r}
+
+conversation %>%
+  select(n_characters) %>%
+  summary()
+
+```
+
+## Games per user
+
+```{r}
+
+games %>%
+  group_by(interrogator_user_id) %>%
+  summarize(
+    n_games = n()
+  ) %>%
+  ggplot(aes(x = n_games)) +
+  geom_bar(stat="count") + 
+  theme_minimal()
+
+```
+
+
+```{r}
+
+games %>%
+  group_by(interrogator_user_id) %>%
+  summarize(
+    n_games = n()
+  ) %>%
+  group_by(n_games) %>%
+  summarize(
+    n = n(),
+    prop = n/nrow(.)
+  )
+
+```
+
+
+## Verdicts
+
+```{r}
+
+games %>%
+  group_by(verdict) %>%
+  summarize(n=n(), prop = n/nrow(games))
+
+```
+
+# Order effects
+
+## Overall
+
+```{r}
+
+games %>%
+  ggplot(aes(x = interrogator_game_index, y = as.numeric(success))) + 
+  stat_summary(geom="pointrange", fun.data="mean_cl_boot") + 
+  geom_smooth(method="lm", formula = "y~x") + 
+  theme_minimal() + 
+  labs(y = "Interrogator Accuracy", x = "Interrogator Trial Index")
+
+```
+
+## By Condition
+
+```{r}
+
+games %>%
+  ggplot(aes(x = interrogator_game_index, y = as.numeric(success))) + 
+  stat_summary(geom="bar", fun="mean") +
+  stat_summary(geom = "errorbar", fun.data="mean_cl_boot", width = 0.2) +
+  facet_wrap(facets=vars(family)) + 
+  theme_minimal()  + 
+  labs(y = "Interrogator Accuracy", x = "Interrogator Trial Index")
+
+```
+
+
+## First vs second persona
+
+```{r}
+
+games.with.persona.order <- games %>%
+  filter(family %in% c("llama-persona", "gpt-4.5-persona")) %>%
+  group_by(interrogator_user_id) %>%
+  mutate(persona_trial_order = dense_rank(interrogator_game_index))
+
+games.with.persona.order %>%
+  ggplot(aes(x = as.factor(persona_trial_order), y = as.numeric(success))) + 
+  stat_summary(geom="bar", fun="mean") + 
+  stat_summary(geom="errorbar", fun.data="mean_cl_boot", width=0.2) + 
+  facet_wrap(facets=vars(family)) + 
+  theme_minimal() + 
+  labs(y = "Interrogator Accuracy", x = "Persona Trial Order")
+
+
+```
+
+Overall
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order))
+
+```
+
+LLaMa
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order %>% filter(family == "llama-persona")))
+
+```
+
+GPT-4.5
+
+```{r}
+
+summary(glm(success ~ persona_trial_order, family="binomial", data = games.with.persona.order %>% filter(family == "gpt-4.5-persona")))
+  
+
+games.persona.first <- games.with.persona.order %>%
+  filter(persona_trial_order == 1)
+
+```
+
+# Win Rate
+
+## Overall
+
+
+```{r}
+
+games %>%
+  group_by(success) %>%
+  summarize(n(), prop = n() / nrow(games))
+
+```
+
+
+```{r}
+
+win_rate <- games %>%
+  mutate(
+    success = ifelse(success==FALSE, 1, 0)
+  ) %>%
+  group_by(ai_model) %>%
+  summarize(
+    win_rate = mean(success),
+    wins = sum(success),
+    n_games = n(),
+    losses = n_games - wins,
+    .groups="drop"
+  ) %>%
+  filter(
+    # n_games > 10
+  ) %>%
+  arrange(-wins)
+
+win_rate
+  
+
+```
+
+```{r}
+win_rate <- games %>%
+  mutate(
+    success = ifelse(success==FALSE, 1, 0),
+    source = ifelse(source == 1, "Prolific", "Undergraduates"),
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+    ),
+  ) %>%
+  # First calculate win rate by witness overall
+  group_by(witness) %>%
+  mutate(overall_win_rate = mean(success)) %>%
+  # Then group by witness and source for detailed stats
+  group_by(witness, source) %>%
+  summarize(
+    win_rate = mean(success),
+    wins = sum(success),
+    n_games = n(),
+    losses = n_games - wins,
+    overall_win_rate = first(overall_win_rate),
+    .groups="drop"
+  ) %>%
+  # Sort by overall win rate first, then by source
+  arrange(-overall_win_rate, source) %>%
+  select(witness, source, win_rate, wins, losses, n_games)
+
+win_rate
+  
+
+```
+
+```{r}
+
+# Format the win_rate data for a minimal CS conference style table
+latex_table <- win_rate %>%
+  # Format win_rate as percentage with one decimal place
+  mutate(
+    win_rate = sprintf("%.1f\\%%", win_rate * 100)
+  ) %>%
+  # Select columns with separate Wins, Losses, and Total
+  select(
+    Model = witness,
+    Source = source,
+    `Win Rate` = win_rate,
+    Wins = wins,
+    Losses = losses,
+    Total = n_games
+  )
+
+# Generate the LaTeX table with minimal formatting
+latex_output <- latex_table %>%
+  kable(
+    format = "latex",
+    booktabs = TRUE,
+    align = "llcrrr",
+    caption = "Win rates by model and participant source.",
+    label = "tab:win_rates",
+    escape = FALSE
+  ) %>%
+  # Simple, clean formatting without extra features
+  kable_styling(
+    latex_options = c("hold_position"),
+    full_width = FALSE
+  ) %>%
+  # Group by model in a minimal way
+  collapse_rows(columns = 1, latex_hline = "major", valign = "middle")
+
+# Print the LaTeX code
+cat(latex_output)
+
+
+```
+
+```{r}
+
+win_rate <- games %>%
+  mutate(
+    success = ifelse(success==FALSE, 1, 0)
+  ) %>%
+  group_by(ai_model_long) %>%
+  summarize(
+    win_rate = mean(success),
+    wins = sum(success),
+    n_games = n(),
+    losses = n_games - wins,
+    .groups="drop"
+  ) %>%
+  filter(
+    # n_games > 10
+  ) %>%
+  arrange(-wins)
+
+win_rate
+  
+
+```
+
+# Model Comparison: Overall Success Rates
+
+```{r}
+# Compare all models' success rates
+model_comparison <- games %>%
+  mutate(success = ifelse(success, 0, 1)) %>%
+  group_by(ai_model) %>%
+  summarize(
+    success_rate = mean(success),
+    se = sqrt(success_rate * (1 - success_rate) / n()),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(success_rate)
+
+# Print table
+model_comparison %>%
+  mutate(
+    success_rate = round(success_rate, 3),
+    `95% CI` = paste0("[", round(success_rate - 1.96 * se, 3), ", ", 
+                      round(success_rate + 1.96 * se, 3), "]"),
+    vs_chance = ifelse(
+      success_rate + 1.96 * se < 0.5, "**Worse than chance**",
+      ifelse(success_rate - 1.96 * se > 0.5, "**Better than chance**", 
+             "Not different from chance")
+    )
+  ) %>%
+  select(ai_model, n, success_rate, `95% CI`, vs_chance) %>%
+  rename(Model = ai_model, `Sample Size` = n, `Success Rate` = success_rate) %>%
+  knitr::kable(caption = "Comparison of All AI Models' Success Rates")
+
+# Visualize model comparison
+ggplot(model_comparison, aes(y = reorder(ai_model, -success_rate), x = success_rate)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_errorbarh(
+    aes(xmin = success_rate - 1.96 * se, xmax = success_rate + 1.96 * se),
+    height = 0.3
+  ) +
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    x = "Success Rate",
+    y = "Model",
+    title = "Comparison of AI Models' Success Rates"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_x_continuous(limits = c(0, 1))
+```
+
+# Confidence
+
+
+```{r}
+
+c.eliza <- "#7B7B7B"
+c.4o <- "#24cc24"
+c.45.m <- "#B47FFA"
+c.45.p <- "#9341FF"
+c.l.m <- "#85BAFB"
+c.l.p <- "#0064E0"
+
+obj_is_vector <- function(x) {
+  is.vector(x) && !is.factor(x)
+}
+
+p.bar <- games %>%
+  mutate(
+    success = ifelse(success, 0, 1),
+    source = ifelse(source == 1, "Prolific", "Undergraduates"),
+    source = factor(source, levels=c("Undergraduates", "Prolific")),
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+      ),
+    b_conf = ifelse(
+      verdict == "B", confidence, -1 * confidence
+    ),
+    s_conf = ifelse(
+      success,b_conf, -1 * b_conf
+    ),
+  ) %>%
+  ggplot(aes(y = reorder(witness, -s_conf), x = success, fill=witness)) + 
+     geom_vline(xintercept=0.5, linetype="dashed", color="#888888", size=1) +
+  # geom_col(aes(x = 1), fill = "#bbbbbb", alpha = 0.5) + 
+  stat_summary(geom="bar", fun = "mean", alpha=0.95) +
+  stat_summary(geom="errorbarh", fun.data = "mean_cl_boot",
+               alpha=0.8,  height=0.2, size=1, color="#333333") +
+
+  scale_fill_manual(
+    values = c(
+      "GPT-4o-NO-PERSONA"=c.4o,
+      "GPT-4.5-PERSONA"=c.45.p,
+      "GPT-4.5-NO-PERSONA"=c.45.m,
+      "ELIZA"=c.eliza,
+      "LLAMA-PERSONA"=c.l.p,
+      "LLAMA-NO-PERSONA"=c.l.m
+      )
+  ) +
+  facet_grid(rows=vars(source)) +
+  theme_minimal(base_size=16) +
+  theme(
+      # text = element_text(family = "Microsoft Sans Serif"),
+      legend.position="none",
+      # axis.title = element_text(size=18),
+      # axis.text = element_text(size=18),
+      plot.margin = margin(0, 10, 0, 0),
+      strip.background = element_blank(),
+      strip.text.y = element_blank()
+    ) +
+  scale_x_continuous(breaks = c(0, 0.5, 1), labels=c("0%", "50%", "100%"), limits=c(0, 1)) +
+  labs (
+    y = "AI Witness",
+    x = "Win Rate"
+  )
+
+
+
+p.jitter <- games %>%
+  mutate(
+    success = ifelse(success, 0, 1),
+    b_conf = ifelse(
+      verdict == "B", confidence, -1 * confidence
+    ),
+    s_conf = ifelse(
+      success,b_conf, -1 * b_conf
+    ),
+    source = ifelse(source == 1, "Prolific", "Undergraduates"),
+    source = factor(source, levels=c("Undergraduates", "Prolific")),
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-PERSONA"
+      ),
+  ) %>%
+  ggplot(aes(x = s_conf, y = reorder(witness, -s_conf), fill=witness, color=witness)) + 
+  geom_vline(xintercept = 0, linetype="dashed", linewidth=1, color="#888888") +
+  geom_jitter(alpha=0.2, size=1.5, stroke=1) + 
+  stat_summary(fun.data = mean_cl_boot, geom="errorbarh", size=1, height=0.15) +
+  stat_summary(fun = mean, geom="point", size=4) +
+  labs(
+    y = "Witness Type",
+    x = "Confidence"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "GPT-4o-NO-PERSONA"=c.4o,
+      "GPT-4.5-PERSONA"=c.45.p,
+      "GPT-4.5-NO-PERSONA"=c.45.m,
+      "ELIZA"=c.eliza,
+      "LLAMA-PERSONA"=c.l.p,
+      "LLAMA-NO-PERSONA"=c.l.m
+      )
+  ) +
+  scale_color_manual(
+    values = c(
+      "GPT-4o-NO-PERSONA"=c.4o,
+      "GPT-4.5-PERSONA"=c.45.p,
+      "GPT-4.5-NO-PERSONA"=c.45.m,
+      "ELIZA"=c.eliza,
+      "LLAMA-PERSONA"=c.l.p,
+      "LLAMA-NO-PERSONA"=c.l.m
+      )
+  ) +
+  theme_minimal(base_size=16) +
+  theme(
+    legend.position = "none",
+    # text = element_text(family = "Microsoft Sans Serif"),
+      # plot.title = element_text(size = 22, hjust = 0.25),
+      # axis.title = element_text(size=22),
+      # axis.text = element_text(size=18),
+      plot.margin = margin(0, 10, 0, 10)
+    ) + 
+  facet_grid(rows=vars(source))
+
+
+p.winrate.bar.jitter <- ggarrange(p.bar,
+          p.jitter + 
+               theme(axis.title.y = element_blank(),
+                     axis.text.y = element_blank()),
+          nrow=1)
+
+# p.winrate.bar.jitter
+
+ggsave("img/win_rate_composite_bar_jitter.png", p.winrate.bar.jitter, width=7, height=5)
+
+ggsave("img/win_rate_composite_bar_jitter.svg", p.winrate.bar.jitter, width=14, height=10)
+
+```
+
+
+# Reasons
+
+```{r}
+
+reason_classes <- read.csv("data/reason_classifications_4o.csv") %>%
+  merge(games %>% select(id, ai_model, success, source, reason), by.x = "game_id", by.y = "id"
+  ) %>%
+  merge(
+    read.csv("data/3p_reason_scheme.csv"), by="class"
+  )
+
+
+all_unique_categories <- c("Linguistic Style", "Situational Awareness", "Content & Knowledge", "Personality & Emotions", "Interaction Dynamics", "Direct", "Meta", "Other")
+
+pal.Categories <- 
+setNames(brewer.pal(length(all_unique_categories), "Set2"), all_unique_categories)
+
+
+```
+
+```{r}
+
+reason_classes %>%
+  group_by(game_id, category) %>%
+  summarize(category = first(category)) %>%
+  group_by(category) %>%
+  summarize(n = n(), prop = n / nrow(.)) %>%
+  arrange(-n)
+
+```
+
+```{r}
+
+reason_classes %>%
+  group_by(class, short_name) %>%
+  summarize(n = n()) %>%
+  arrange(-n)
+
+```
+## Plots
+
+### All Reasons
+
+
+```{r}
+
+reason_classes %>%
+  group_by(short_name, category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    .groups="drop"
+    ) %>%
+  arrange(-prop) %>%
+  filter(n > 3) %>%
+  ggplot(aes(y = reorder(short_name, prop), x = prop, fill = category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=18) +
+  theme(legend.position = "none") +
+  facet_wrap(~category, scales="free_y") +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories)
+
+ggsave("img/all_reasons.png", width=14, height=7)
+
+```
+
+### Top Reasons
+
+```{r}
+
+
+p.reasons.top <- reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category
+  ) %>%
+  group_by(reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(games),
+    .groups="drop"
+  ) %>%
+  arrange(-prop) %>%
+  head(16) %>%
+  ggplot(aes(y = reorder(reason_class, prop), x = prop, fill = reason_category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.7, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+
+```
+
+
+### By Accuracy
+
+```{r}
+
+reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category
+  ) %>%
+  merge(games %>% select(id), by.x = "game_id", by.y = "id") %>%
+  mutate(accuracy = ifelse(success, 1, 0)) %>%
+  group_by(reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    acc = mean(accuracy),
+    .groups="drop"
+  ) %>%
+  filter(n>10) %>%
+  arrange(-acc) %>%
+  rbind(head(., 4)) %>%
+  tail(8) %>%
+  select(reason_class, n, acc) %>%
+  arrange(-acc)
+
+```
+
+```{r}
+
+p.reasons.acc <- reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category
+  ) %>%
+  merge(games %>% select(id), by.x = "game_id", by.y = "id") %>%
+  mutate(accuracy = ifelse(success, 1, 0)) %>%
+  group_by(reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    acc = mean(accuracy),
+    se = sd(accuracy) / sqrt(n()),  # Calculate standard error
+    lower_ci = acc - 1.96 * se,  # 95% CI lower bound
+    upper_ci = acc + 1.96 * se,  # 95% CI upper bound
+    .groups="drop"
+  ) %>%
+  filter(n>15) %>%
+  arrange(-acc) %>%
+  rbind(head(., 8)) %>%
+  tail(16) %>%
+  ggplot(aes(y = reorder(reason_class, acc), x = acc, fill = reason_category)) + 
+  geom_bar(stat="identity") +
+  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2) +
+  # geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Mean Accuracy",
+    y = "Reason Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.75, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+ggsave("img/reasons_acc.pdf", width=7, height=7)
+
+ggsave("img/reasons_acc.png", width=7, height=7, bg="white")
+
+```
+
+
+### Combined Reason Plot
+
+```{r}
+
+
+library(egg)
+
+p.strat <- ggarrange(
+    p.reasons.top,
+    p.reasons.acc + theme(
+      axis.title.y = element_blank(),
+      legend.position="none"),
+    nrow=1)
+
+ggsave("img/reasons_combined.png", p.strat, width=14, height=7, bg="white")
+
+```
+
+## By Success
+
+```{r}
+
+
+reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    success = ifelse(success, "Selected Human", "Selected AI")
+  ) %>%
+  group_by(reason_class, reason_category, success) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    .groups="drop"
+  ) %>%
+  arrange(-prop) %>%
+  head(16) %>%
+  ggplot(aes(y = reorder(reason_class, prop), x = prop, fill = reason_category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  facet_grid(cols=vars(success)) + 
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.85, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+
+```
+
+```{r}
+
+
+# Calculate top reasons for each model separately
+reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    success = ifelse(success, "Correct Verdicts", "Incorrect Verdicts")
+  ) %>%
+  # Count occurrences by reason class and model
+  group_by(success, reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  # Calculate proportion within each model
+  group_by(success) %>%
+  mutate(
+    total_reasons = sum(n),
+    prop = n / total_reasons
+  ) %>%
+  # Get top N reasons for each model independently
+  group_by(success) %>%
+  arrange(success, desc(prop)) %>%
+  slice_head(n = 15) %>%  # Adjust number as needed
+  # Create the plot with independent y-axes
+  ggplot(aes(y = reorder_within(reason_class, prop, success), 
+             x = prop, 
+             fill = reason_category)) + 
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust = 1.25, size = 3, color = "#333333") +
+  # This is the key part - free_y allows different y-axes
+  facet_wrap(facets = vars(success), scales = "free_y") +
+  # Required when using reorder_within
+  scale_y_reordered() +
+  theme_minimal(base_size = 24) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    strip.text = element_text(size=22),
+    legend.position = c(0.87, 0.15),
+    legend.background = element_rect(fill = "#FFFFFF88", linewidth = 0,
+                                    color = "transparent"),
+    legend.text = element_text(size = 16, lineheight = 32),
+    legend.margin = margin(c(-10, 1, 1, 1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                           label.hjust = 1))
+
+
+ggsave("img/top_reasons_by_success.png", width=14, height=7)
+
+```
+
+## By Source
+
+```{r}
+
+reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    source = ifelse(source == 1, "Prolific", "Undergraduates")
+  ) %>%
+  group_by(reason_class, reason_category, source) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    .groups="drop"
+  ) %>%
+  arrange(-prop) %>%
+  head(16) %>%
+  ggplot(aes(y = reorder(reason_class, prop), x = prop, fill = reason_category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  facet_grid(cols=vars(source)) + 
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.85, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+
+```
+
+## By Model
+
+```{r}
+
+library(tidytext)
+
+# Calculate top reasons for each model separately
+reason_classes %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+      ),
+  ) %>%
+  # Count occurrences by reason class and model
+  group_by(witness, reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  # Calculate proportion within each model
+  group_by(witness) %>%
+  mutate(
+    total_reasons = sum(n),
+    prop = n / total_reasons
+  ) %>%
+  # Get top N reasons for each model independently
+  group_by(witness) %>%
+  arrange(witness, desc(prop)) %>%
+  slice_head(n = 10) %>%  # Adjust number as needed
+  # Create the plot with independent y-axes
+  ggplot(aes(y = reorder_within(reason_class, prop, witness), 
+             x = prop, 
+             fill = reason_category)) + 
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust = 1.25, size = 3, color = "#333333") +
+  # This is the key part - free_y allows different y-axes
+  facet_wrap(facets = vars(witness), scales = "free_y") +
+  # Required when using reorder_within
+  scale_y_reordered() +
+  theme_minimal(base_size = 20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = "none",
+    legend.background = element_rect(fill = "#FFFFFF88", linewidth = 0,
+                                    color = "transparent"),
+    legend.text = element_text(size = 14, lineheight = 28),
+    legend.margin = margin(c(-10, 1, 1, 1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  )
+
+ggsave("img/top_reasons_by_model.png", width=16, height=8)
+
+```
+
+### Only model passes
+
+```{r}
+
+# Calculate top reasons for each model separately
+reason_classes %>%
+  filter(success == FALSE) %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+      ),
+  ) %>%
+  # Count occurrences by reason class and model
+  group_by(witness, reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  # Calculate proportion within each model
+  group_by(witness) %>%
+  mutate(
+    total_reasons = sum(n),
+    prop = n / total_reasons
+  ) %>%
+  # Get top N reasons for each model independently
+  group_by(witness) %>%
+  arrange(witness, desc(prop)) %>%
+  slice_head(n = 10) %>%  # Adjust number as needed
+  # Create the plot with independent y-axes
+  ggplot(aes(y = reorder_within(reason_class, prop, witness), 
+             x = prop, 
+             fill = reason_category)) + 
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust = 1.25, size = 3, color = "#333333") +
+  # This is the key part - free_y allows different y-axes
+  facet_wrap(facets = vars(witness), scales = "free_y") +
+  # Required when using reorder_within
+  scale_y_reordered() +
+  theme_minimal(base_size = 20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = "none",
+    legend.background = element_rect(fill = "#FFFFFF88", linewidth = 0,
+                                    color = "transparent"),
+    legend.text = element_text(size = 14, lineheight = 28),
+    legend.margin = margin(c(-10, 1, 1, 1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  )
+
+ggsave("img/top_reasons_by_model_pass.png", width=16, height=8)
+
+```
+
+### Only model fails
+
+```{r}
+
+# Calculate top reasons for each model separately
+reason_classes %>%
+  filter(success == TRUE) %>%
+  mutate(
+    reason_class = short_name,
+    reason_category = category,
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+      ),
+  ) %>%
+  # Count occurrences by reason class and model
+  group_by(witness, reason_class, reason_category) %>%
+  summarize(
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  # Calculate proportion within each model
+  group_by(witness) %>%
+  mutate(
+    total_reasons = sum(n),
+    prop = n / total_reasons
+  ) %>%
+  # Get top N reasons for each model independently
+  group_by(witness) %>%
+  arrange(witness, desc(prop)) %>%
+  slice_head(n = 10) %>%  # Adjust number as needed
+  # Create the plot with independent y-axes
+  ggplot(aes(y = reorder_within(reason_class, prop, witness), 
+             x = prop, 
+             fill = reason_category)) + 
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust = 1.25, size = 3, color = "#333333") +
+  # This is the key part - free_y allows different y-axes
+  facet_wrap(facets = vars(witness), scales = "free_y") +
+  # Required when using reorder_within
+  scale_y_reordered() +
+  theme_minimal(base_size = 20) +
+  labs(
+    x = "Proportion of Reasons",
+    y = "Reason Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = "none",
+    legend.background = element_rect(fill = "#FFFFFF88", linewidth = 0,
+                                    color = "transparent"),
+    legend.text = element_text(size = 14, lineheight = 28),
+    legend.margin = margin(c(-10, 1, 1, 1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  )
+
+ggsave("img/top_reasons_by_model_fails.png", width=16, height=8)
+
+```
+
+
+
+# Strategy tagging
+
+```{r}
+
+# Load strategy data
+strategies <- read.csv("data/strategy_classifications_4o.csv") %>%
+  mutate(
+    code = class,
+  )
+
+# Load strategy scheme
+strategy_scheme <- read.csv("data/tt_strategyclass.csv") %>%
+  filter(
+    code != "6f"
+  ) %>%
+  mutate(
+    strategy_class = name,
+    strategy_category = category
+  )
+
+# Merge strategy data with scheme
+strategy_classes <- strategies %>%
+  merge(strategy_scheme, by="code")
+
+
+all_unique_categories <- c("Linguistic Style", "Situational Awareness", "Knowledge & Reasoning", "Social & Emotional", "Small Talk", "Direct", "Meta", "Other")
+
+pal.Categories <- 
+setNames(brewer.pal(length(all_unique_categories), "Set2"), all_unique_categories)
+
+
+```
+
+## Top
+
+```{r}
+
+strategy_classes %>%
+  group_by(game_id, strategy_category) %>%
+  summarize(strategy_category = first(strategy_category)) %>%
+  group_by(strategy_category) %>%
+  summarize(n = n(), prop = n / nrow(games)) %>%
+  arrange(-n)
+
+```
+
+```{r}
+
+p.strategy.top <- strategy_classes %>%
+  group_by(strategy_class, strategy_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(games),
+    .groups="drop"
+  ) %>%
+  arrange(-prop) %>%
+  head(16) %>%
+  ggplot(aes(y = reorder(strategy_class, prop), x = prop, fill = strategy_category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Proportion of Games",
+    y = "Strategy Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.1)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.7, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+
+ggsave("img/strategies_top.pdf", width=7, height=7)
+
+ggsave("img/strategies_top.png", width=7, height=7, bg="white")
+
+```
+
+## By subcategory
+
+```{r}
+
+strategy_classes %>%
+  group_by(strategy_class, strategy_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    .groups="drop"
+    ) %>%
+  arrange(-prop) %>%
+  ggplot(aes(y = reorder(strategy_class, prop), x = prop, fill = strategy_category)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=18) +
+  theme(legend.position = "none") +
+  facet_wrap(~strategy_category, scales="free_y") +
+  labs(
+    x = "Proportion of Strategies",
+    y = "Strategy Class"
+  ) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.05)) +
+  scale_fill_manual(values=pal.Categories)
+
+
+ggsave("img/strategies_by_cat.png", width=14, height=7)
+
+```
+
+
+### By Accuracy
+
+```{r}
+
+strategy_classes %>%
+  merge(games %>% select(id, success), by.x = "game_id", by.y = "id") %>%
+  mutate(accuracy = ifelse(success, 1, 0)) %>%
+  group_by(strategy_class, strategy_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    acc = mean(accuracy),
+    .groups="drop"
+  ) %>%
+  filter(n>10) %>%
+  arrange(-acc) %>%
+  rbind(head(., 4)) %>%
+  tail(8) %>%
+  select(strategy_class, n, acc) %>%
+  arrange(-acc)
+
+```
+
+```{r}
+
+p.strat.acc <- strategy_classes %>%
+  merge(games %>% select(id, success), by.x = "game_id", by.y = "id") %>%
+  mutate(accuracy = ifelse(success, 1, 0)) %>%
+  group_by(strategy_class, strategy_category) %>%
+  summarize(
+    n = n(),
+    prop = n / nrow(.),
+    acc = mean(accuracy),
+    se = sd(accuracy) / sqrt(n()),  # Calculate standard error
+    lower_ci = acc - 1.96 * se,  # 95% CI lower bound
+    upper_ci = acc + 1.96 * se,  # 95% CI upper bound
+    .groups="drop"
+  ) %>%
+  filter(n>10) %>%
+  arrange(-acc) %>%
+  rbind(head(., 8)) %>%
+  tail(16) %>%
+  ggplot(aes(y = reorder(strategy_class, acc), x = acc, fill = strategy_category)) + 
+  geom_bar(stat="identity") +
+  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2) +
+  # geom_text(aes(label = n), vjust = 0.5, hjust=1.25, size=3, color="#333333") +
+  theme_minimal(base_size=20) +
+  labs(
+    x = "Mean Accuracy",
+    y = "Strategy Class"
+  )  +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+  scale_fill_manual(values = pal.Categories) + 
+  theme(
+    legend.position = c(0.75, 0.15),
+    legend.background = element_rect(fill="#FFFFFF88", linewidth = 0,
+                                     color="transparent"),
+    legend.text = element_text(size=14, lineheight = 28),
+    legend.margin=margin(c(-10,1,1,1)),
+    legend.title = element_blank(),
+    legend.spacing.y = unit(0.2, 'cm')
+  ) +
+  guides(fill = guide_legend(label.position = "left",
+                             label.hjust = 1))
+
+ggsave("img/strategies_acc.pdf", width=7, height=7)
+
+ggsave("img/strategies_acc.png", width=7, height=7, bg="white")
+
+```
+
+## Combined Strategy Plot
+
+```{r}
+
+
+library(egg)
+
+p.strat <- ggarrange(
+    p.strategy.top,
+    p.strat.acc + theme(
+      axis.title.y = element_blank(),
+      legend.position="none"),
+    nrow=1)
+
+ggsave("img/strategies_combined.png", p.strat, width=14, height=7, bg="white")
+
+```
+
+
+  
+# Demographics
+
+## Summary
+
+
+```{r}
+
+library(cowplot)
+
+
+user_stats <- profile %>%
+  merge(
+    games %>%
+      group_by(interrogator_user_id) %>%
+      summarize(
+        n_games = n(),
+        accuracy = mean(success),
+        ),
+    by.x = "user_id", by.y = "interrogator_user_id",
+    all.y = FALSE
+  ) %>%
+  mutate(
+    age = 2025 - year_of_birth,
+    source = ifelse(source == 1, "Prolific", "Undergraduates"),
+  )
+
+c.prolific <- "#76AEC3"
+c.undergrads <- "#0044B4"
+
+```
+
+```{r}
+
+summary(user_stats %>%
+          mutate(gender = as.factor(gender)))
+
+mean(user_stats %>% filter(age > 0, age < 100) %>% pull(age))
+sd(user_stats %>% filter(age > 0, age < 100) %>% pull(age))
+
+```
+
+## Distribution
+
+```{r}
+
+p.age.dist <- user_stats %>%
+  filter(
+    age > 0,
+    age < 100
+  ) %>%
+  mutate(Study = source) %>%
+  ggplot(aes(x = age, fill=Study)) + 
+  geom_histogram(bins=10, color="white", stroke=0, position="dodge") +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Age",
+    y = "Frequency"
+  )
+
+p.age.dist
+
+```
+
+```{r}
+
+
+p.edu.dist <- user_stats %>%
+  filter(education > 0) %>%
+  ggplot(aes(x = factor(education), fill=source)) + 
+  geom_bar(stat="count", position="dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Formal Education",
+    y = "Frequency"
+  ) +
+  scale_x_discrete(
+    labels=c("HS", "UG", "PG")
+  )
+
+p.edu.dist
+
+```
+
+
+```{r}
+
+
+p.freq.dist <- user_stats %>%
+  filter(chatbot_interaction_frequency > 0) %>%
+  ggplot(aes(x = factor(chatbot_interaction_frequency), fill=source)) +
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Chatbot Interaction",
+    y = "Frequency"
+  ) +
+  scale_x_discrete(
+    labels=c("Never", "Month", "Week", "Day")
+  )
+
+p.freq.dist
+
+```
+
+```{r}
+
+
+p.knowledge.dist <- user_stats %>%
+  filter(familiarity_with_GPT > 0) %>%
+  ggplot(aes(x = factor(familiarity_with_GPT), fill=source)) + 
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "LLM Knowledge",
+    y = "Frequency"
+  ) +
+    scale_x_discrete(
+    labels=c("None", "Some", "High", "Research")
+  )
+
+p.knowledge.dist
+
+```
+
+No Games
+
+```{r}
+
+
+p.games.dist <- user_stats %>%
+  ggplot(aes(x = n_games, fill=source)) + 
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "No. Interrogator Games",
+    y = "Frequency"
+  )
+
+p.games.dist
+
+```
+
+
+Gender
+
+```{r}
+
+p.gender.dist <- user_stats %>%
+  filter(gender %in% c("M", "F", "N")) %>%
+  ggplot(aes(x = factor(gender), fill=source)) + 
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Gender",
+    y = "Frequency"
+  ) +
+  scale_x_discrete(
+    labels=c("F", "M", "N.B.")
+  )
+
+p.gender.dist
+
+
+```
+
+
+Intelligence
+
+```{r}
+
+p.intelligence.dist <- user_stats %>%
+  filter(intelligence > 0) %>%
+  ggplot(aes(x = factor(intelligence), fill=source)) + 
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "AI Intelligence",
+    y = "Frequency"
+  )
+
+p.intelligence.dist
+
+
+```
+
+AI Emotion
+
+```{r}
+
+p.emotion.dist <- user_stats %>%
+  filter(emotion > 0) %>%
+  ggplot(aes(x = factor(emotion), fill=source)) +
+  geom_bar(stat="count", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "AI Emotion",
+    y = "Frequency"
+  )
+
+p.emotion.dist
+
+
+```
+
+AI Emotion
+
+```{r}
+
+p.accest.dist <- user_stats %>%
+  mutate(
+    accuracy_estimate = pmin(accuracy_estimate, n_games),
+    acc_est = accuracy_estimate / n_games
+  ) %>%
+  ggplot(aes(x = acc_est, fill=source)) +
+  geom_histogram(bins=5, color="white", position = "dodge")  +
+  scale_fill_manual(
+    values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)
+  ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Accuracy Estimate",
+    y = "Frequency"
+  ) + 
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25))
+
+p.accest.dist
+
+
+```
+
+
+
+
+```{r}
+
+study_legend = ggpubr::get_legend(p.age.dist + theme(legend.position="bottom"))
+
+p.demo.dist <- ggpubr::ggarrange(p.gender.dist,
+          p.edu.dist + 
+               theme(axis.title.y = element_blank()),
+          p.age.dist + 
+               theme(axis.title.y = element_blank()),
+          p.knowledge.dist,
+          p.freq.dist + 
+               theme(axis.title.y = element_blank()),
+          p.games.dist +
+               theme(axis.title.y = element_blank()),
+          p.intelligence.dist,
+          p.emotion.dist +
+               theme(axis.title.y = element_blank()),
+          p.accest.dist +
+               theme(axis.title.y = element_blank()),
+          nrow=3, ncol=3,
+          widths = c(5, 4, 4),
+          common.legend=T,
+          legend = "bottom",
+          legend.grob = study_legend
+          )
+
+p.demo.dist
+
+
+ggsave("img/demo_dist.png",p.demo.dist, width=14, height=10)
+
+
+```
+
+## Accuracy
+
+```{r}
+
+
+p.age <- user_stats %>%
+  filter(
+    age > 0,
+    age < 100
+  ) %>%
+  ggplot(aes(x = age, y = accuracy, fill=source, color=source)) + 
+  geom_smooth(formula="y~x", method="lm") +
+  scale_color_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  stat_summary_bin(fun.data="mean_cl_boot", geom="pointrange", bins=20, alpha=0.8) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Age",
+    y = "Accuracy"
+  ) + 
+  scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25))
+
+p.age
+
+```
+
+```{r}
+
+
+p.edu <- user_stats %>%
+  filter(education > 0) %>%
+  ggplot(aes(x = factor(education), y = accuracy, fill=source)) + 
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot, color="#444444", position=position_dodge(width=0.95)) + 
+  theme_minimal(
+    base_size=24
+  ) + 
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  theme(legend.position = "none") +
+  labs(
+    x = "Formal Education",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25)) + 
+  # coord_cartesian(ylim=c(0,1)) + 
+  scale_x_discrete(
+    labels=c("HS", "UG", "PG")
+  )
+
+p.edu
+
+```
+
+
+```{r}
+
+
+p.freq <- user_stats %>%
+  filter(chatbot_interaction_frequency > 0) %>%
+  ggplot(aes(x = factor(chatbot_interaction_frequency), y = accuracy, fill=source)) + 
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot, position=position_dodge(width=0.95))  + 
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Chatbot Interaction",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1)) + 
+  scale_x_discrete(
+    labels=c("Never", "Monthly", "Weekly", "Daily")
+  )
+
+p.freq
+
+```
+
+```{r}
+
+
+p.knowledge <- user_stats %>%
+  filter(familiarity_with_GPT > 0) %>%
+  ggplot(aes(x = factor(familiarity_with_GPT), y = accuracy, fill=source)) + 
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot,
+               position=position_dodge(width=0.95))  +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  labs(
+    x = "LLM Knowledge",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1)) + 
+    scale_x_discrete(
+    labels=c("None", "Some", "High", "Research")
+  )
+
+p.knowledge
+
+```
+
+No Games
+
+```{r}
+
+
+p.games <- games %>%
+  mutate(
+    accuracy = ifelse(success, 1, 0),
+    source = ifelse(source == 1, "Prolific", "Undergraduates")
+    ) %>%
+  ggplot(aes(x = interrogator_game_index, y = accuracy, color=source, fill=source)) + 
+  geom_smooth(method="lm", formula="y~x") +
+  stat_summary(fun.data="mean_cl_boot", geom="pointrange", alpha=0.8) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(
+    legend.position = "none"
+  ) +
+  scale_color_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  labs(
+    x = "No. Games",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1)) + 
+  scale_x_continuous(breaks = seq(0, 10, by=1))
+
+p.games
+```
+
+
+Gender
+
+```{r}
+
+p.gender <- user_stats %>%
+  mutate(Study = source) %>%
+  filter(gender %in% c("M", "F", "N")) %>%
+  ggplot(aes(x = factor(gender), y = accuracy, fill=Study)) +
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot, color="#444444", position=position_dodge(width=0.95)) + 
+  theme_minimal(
+    base_size=24
+  ) + 
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  theme(legend.position = "none") +
+  labs(
+    x = "Gender",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1)) + 
+  scale_x_discrete(
+    labels=c("F", "M", "N.B.")
+  )
+
+p.gender
+
+
+```
+
+AI Intelligence
+
+```{r}
+
+p.intelligence <- user_stats %>%
+  filter(intelligence > 0) %>%
+  ggplot(aes(x = factor(intelligence), y = accuracy, fill=source)) + 
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot, color="#444444", position=position_dodge(width=0.95)) + 
+  theme_minimal(
+    base_size=24
+  ) + 
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  theme(legend.position = "none") +
+  labs(
+    x = "AI Intelligence",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1))
+
+p.intelligence
+```
+
+AI Emotion
+
+```{r}
+
+p.emotion <- user_stats %>%
+  filter(emotion > 0) %>%
+  ggplot(aes(x = factor(emotion), y = accuracy, fill=source)) +
+  stat_summary(geom="bar", fun="mean", position="dodge")  +
+  stat_summary(geom="errorbar", width=0.5, fun.data = mean_cl_boot, color="#444444", position=position_dodge(width=0.95)) + 
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads) ) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(legend.position = "none") +
+  labs(
+    x = "AI Emotion",
+    y = "Accuracy"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent, breaks = seq(0, 1, by = 0.25), limits=c(0,1))
+
+p.emotion
+
+```
+
+Accuracy Estimate
+
+```{r}
+
+p.accest <- user_stats %>%
+  mutate(
+    accuracy_estimate = pmin(accuracy_estimate, n_games),
+    acc_est = accuracy_estimate / n_games
+  ) %>%
+  ggplot(aes(x = acc_est, y = accuracy, fill=source, color=source)) +
+  stat_summary_bin(fun.data="mean_cl_boot", geom="pointrange", bins=5, alpha=0.8) +
+  geom_smooth(method="lm", formula="y~x") +
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  scale_color_manual(values=c("Prolific"=c.prolific, "Undergraduates"=c.undergrads)) +
+  theme_minimal(
+    base_size=24
+  ) + 
+  theme(
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Accuracy Estimate",
+    y = "Accuracy"
+  ) + 
+  scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) + 
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25))
+
+p.accest
+
+```
+
+```{r}
+
+obj_is_vector <- function(x) is.vector(x) && !is.factor(x)
+
+study_legend <- ggpubr::get_legend(p.gender + theme(legend.position = "bottom"))
+
+p.demo <- ggpubr::ggarrange(p.gender,
+          p.edu + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          p.age + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          p.knowledge,
+          p.freq + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          p.games +
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          p.intelligence,
+          
+          p.emotion + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          
+          p.accest +
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank()),
+          nrow=3, ncol=3,
+          widths = c(5, 4, 4),
+          common.legend=T,
+          legend = "bottom",
+          legend.grob = study_legend
+          )
+
+ggsave("img/demo_effects.pdf", p.demo, width=14, height=10)
+
+ggsave("img/demo_effects.png", p.demo, width=14, height=10)
+
+```
+
+# Confidence
+
+
+## Calibration
+
+```{r}
+
+p.conf.calibration <- games %>%
+  mutate(
+    confidence_to_human = ifelse(success, abs(confidence), -abs(confidence)) / 100,
+    abs_confidence = abs(confidence) / 100,
+    study = ifelse(source == 1, "Prolific", "Undergraduate"),
+    witness = recode(
+      ai_model,
+      eliza="ELIZA",
+      `gpt-4o_minimal`="GPT-4o-NO-PERSONA",
+      `gpt-4.5_minimal`="GPT-4.5-NO-PERSONA",
+      `gpt-4.5_quinn`="GPT-4.5-PERSONA",
+      `llama-405b_quinn`="LLAMA-PERSONA",
+      `llama-405b_minimal`="LLAMA-NO-PERSONA"
+      ),
+  ) %>%
+  ggplot(aes(x = abs_confidence, y = as.numeric(success), color=study, fill=study)) + 
+  stat_summary_bin(fun.data="mean_cl_boot", geom="pointrange", bins=5, alpha=0.8) +
+  geom_smooth(method="lm", formula="y~x") +
+  theme_minimal(
+    base_size=24
+  ) +
+  labs(
+    x = "Confidence",
+    y = "Accuracy",
+    color = "Study",
+    fill = "Study"
+  ) + 
+  scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+  scale_x_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+  scale_color_manual(values=c("Prolific"=c.prolific, "Undergraduate"=c.undergrads)) +
+  scale_fill_manual(values=c("Prolific"=c.prolific, "Undergraduate"=c.undergrads)) +
+  facet_wrap(~witness) + 
+  theme(
+    legend.position = "bottom"
+  )
+
+# ggsave("img/win_rate_composite_bar_jitter.svg", , width=14, height=10)
+
+p.conf.calibration
+
+ggsave("img/confidence_calibration.pdf", p.conf.calibration, width=14, height=10)
+
+ggsave("img/confidence_calibration.png", p.conf.calibration, width=14, height=10)
+
+```
