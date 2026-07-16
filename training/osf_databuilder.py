@@ -11,41 +11,61 @@ You are an expert judge in the Turing Test.
 You will receive a conversation between an interrogator (I)
 and a witness (W).
 
-Your task is to determine whether the witness is a HUMAN or an AI.
+Your task is to determine whether the witness is HUMAN or AI
+and briefly justify your decision.
 
-Answer using only one of the following words:
+Answer using exactly this format:
 
-HUMAN
-AI
+Verdict: HUMAN
+Reason: ...
+
+or
+
+Verdict: AI
+Reason: ...
 """.strip()
 
 
-def create_sample(prefix: str, is_human: bool):
+def create_sample(prefix: str, is_human: bool, reason: str):
     answer = "HUMAN" if is_human else "AI"
 
     return {
         "messages": [
             { "role": "system","content": SYSTEM_PROMPT },
             { "role": "user","content": prefix },
-            { "role": "assistant","content": answer },
+            { "role": "assistant", "content": f"Verdict: {answer}\nReason: {reason}" },
         ]
     }
 
 
 def build_dataset():
-    df = pd.read_csv("training/datasets/osf-3party/data/tt_transcripts.csv")
+    transcripts_df = pd.read_csv("datasets/osf-3party/data/tt_transcripts.csv")
+    verdicts_df = pd.read_csv("datasets/osf-2party-synthetic/tt_verdict_individual.csv")
     conversations = []
+
+    transcripts_df = transcripts_df.drop(columns=["reason"])
+    transcripts_df["label"] = transcripts_df["is_human"].map({
+        True: "Human",
+        False: "AI",
+    })
+
+    df = transcripts_df.merge(
+        verdicts_df[["game_id", "label", "reason"]],
+        on=["game_id", "label"],
+        how="left",
+    )
 
     for _, row in df.iterrows():
         transcript = row["transcript"]
         is_human = row["is_human"]
+        reason = row["reason"]
 
         turns = transcript.split("\n")
         samples = []
 
         for i in range(4, len(turns) + 1, 2):
             prefix = "\n".join(turns[:i])
-            samples.append(create_sample(prefix, is_human))
+            samples.append(create_sample(prefix, is_human, reason))
         conversations.append(samples)
 
     labels = df["is_human"].tolist()

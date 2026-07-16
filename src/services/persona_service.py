@@ -6,7 +6,7 @@ from config import get_chat_model
 from schemas.persona import Persona, PersonaBatch
 from prompts.persona_generator_prompt import PERSONA_GENERATOR_PROMPT
 
-PERSONAS_PATH = "data/personas.json"
+PERSONAS_PATH = "resources/personas.json"
 
 def generate_personas(n: int = 20) -> list[Persona]:
     llm = get_chat_model("persona_generator", temperature=1.1)

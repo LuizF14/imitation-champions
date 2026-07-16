@@ -3,8 +3,7 @@ from typing import Literal
 
 class JudgeVerdict(BaseModel):
     evidence: list[str] = Field(
-        description="lista de observações específicas da conversa que embasam o veredito, citando trechos"
+        description="list of specific observations from the conversation that support the verdict, citing excerpts"
     )
-    verdict: Literal["humano", "ia"]
-    confidence: int = Field(ge=0, le=100)
-    reason: str = Field(description="resumo curto (1-2 frases) do principal fator que decidiu o veredito")
+    verdict: Literal["HUMAN", "AI"]
+    reason: str = Field(description="A brief summary (1–2 sentences) of the main factor determining the verdict.")

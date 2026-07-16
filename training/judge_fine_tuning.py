@@ -56,11 +56,6 @@ model = get_peft_model(model, lora_config)
 model.print_trainable_parameters()
 print(f"Modelo carregado!\nDevice: {model.device}\nVRAM: {torch.cuda.memory_allocated()/1024**3:.2f} GB")
 
-for name, param in model.named_parameters():
-    if param.requires_grad:
-        print("ANTES DO SFTTrainer:", name, param.dtype)
-        break
-
 train_dataset, eval_dataset = build_dataset()
 
 training_args = SFTConfig(

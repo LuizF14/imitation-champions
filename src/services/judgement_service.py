@@ -54,25 +54,17 @@ class BenchmarkResult:
             return 0.0
         return sum(r.fooled_judge for r in self.runs) / len(self.runs)
 
-    @property
-    def avg_confidence(self) -> float:
-        if not self.runs:
-            return 0.0
-        return statistics.mean(r.verdict.confidence for r in self.runs)
-
     def summary(self) -> str:
         return "\n".join([
             f"Conversas avaliadas: {len(self.runs)}",
-            f"Taxa de sucesso (bot passou por humano): {self.win_rate:.1%}",
-            f"Confiança média do judge: {self.avg_confidence:.1f}",
+            f"Taxa de sucesso (bot passou por humano): {self.win_rate:.1%}"
         ])
 
     def to_dict(self):
         return {
             "summary": {
                 "n_conversations": len(self.runs),
-                "win_rate": self.win_rate,
-                "avg_confidence": self.avg_confidence,
+                "win_rate": self.win_rate
             },
             "runs": [run.to_dict() for run in self.runs],
         }
@@ -96,7 +88,7 @@ class JudgmentService:
         self,
         n_conversations: int = 10,
         turns_per_conversation: int = 4,
-        output_file: str = "benchmark_results.json",
+        output_file: str = "resources/benchmark_results.json",
     ) -> BenchmarkResult:
 
         result = BenchmarkResult()
@@ -127,7 +119,6 @@ class JudgmentService:
 
             progress.set_postfix(
                 veredito=verdict.verdict,
-                confianca=verdict.confidence,
             )
 
         result.save_json(output_file)
