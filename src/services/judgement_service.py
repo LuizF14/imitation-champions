@@ -1,6 +1,5 @@
 import json
 import random
-import statistics
 from dataclasses import dataclass, field, asdict, is_dataclass  # Adicionado is_dataclass
 from pathlib import Path
 from tqdm import tqdm
@@ -113,13 +112,11 @@ class JudgmentService:
                     turns=turns,
                     transcript=transcript,
                     verdict=verdict,
-                    fooled_judge=(verdict.verdict == "humano"),
+                    fooled_judge=(verdict.verdict == "HUMAN"),
                 )
             )
 
-            progress.set_postfix(
-                veredito=verdict.verdict,
-            )
+            progress.set_postfix(veredito=verdict.verdict)
 
         result.save_json(output_file)
         tqdm.write(f"\nResultados salvos em: {output_file}")

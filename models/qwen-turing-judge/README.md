@@ -1,12 +1,15 @@
 ---
 base_model: Qwen/Qwen2.5-3B-Instruct
-library_name: transformers
+library_name: peft
 model_name: qwen-turing-judge
 tags:
-- generated_from_trainer
+- base_model:adapter:Qwen/Qwen2.5-3B-Instruct
+- lora
 - sft
+- transformers
 - trl
 licence: license
+pipeline_tag: text-generation
 ---
 
 # Model Card for qwen-turing-judge
@@ -35,9 +38,10 @@ This model was trained with SFT.
 
 ### Framework versions
 
+- PEFT 0.19.1
 - TRL: 1.8.0
 - Transformers: 5.13.1
-- Pytorch: 2.6.0+cu124
+- Pytorch: 2.11.0+cu128
 - Datasets: 5.0.0
 - Tokenizers: 0.22.2
 
@@ -50,7 +54,7 @@ Cite TRL as:
 ```bibtex
 @software{vonwerra2020trl,
   title   = {{TRL: Transformers Reinforcement Learning}},
-  author  = {von Werra, Leandro and Belkada, Younes and Tunstall, Lewis and Beeching, Edward and Thrush, Tristan and Lambert, Nathan and Huang, Shengyi and Rasul, Kashif and GallouÃ©dec, Quentin},
+  author  = {von Werra, Leandro and Belkada, Younes and Tunstall, Lewis and Beeching, Edward and Thrush, Tristan and Lambert, Nathan and Huang, Shengyi and Rasul, Kashif and Gallouédec, Quentin},
   license = {Apache-2.0},
   url     = {https://github.com/huggingface/trl},
   year    = {2020}

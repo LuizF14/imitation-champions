@@ -3,11 +3,12 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     groq_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"
+    HF_TOKEN: str | None = None
 
     provider_main_agent: str = "ollama"
     provider_humanizer: str = "ollama"
     provider_persona_generator: str = "ollama"
-    provider_judge: str = "ollama"
+    provider_judge: str = "huggingface"
     provider_interrogator: str = "ollama"
 
     # model_main_agent: str = "llama-3.3-70b-versatile"
@@ -19,7 +20,7 @@ class Settings(BaseSettings):
     model_main_agent: str = "llama3.1"  # ou o modelo que você baixou
     model_humanizer: str = "llama3.1"
     model_persona_generator: str = "llama3.1"
-    model_judge: str = "llama3.1"
+    model_judge: str = "qwen-turing-judge"
     model_interrogator: str = "llama3.1"
 
     groq_api_key: str = ""
@@ -44,5 +45,8 @@ def get_chat_model(role: str, temperature: float = 0.7):
     elif provider == "ollama":
         from providers.ollama_provider import get_ollama_model
         return get_ollama_model(model, temperature)
+    elif provider == "huggingface":
+        from providers.huggingface_provider import get_huggingface_model
+        return get_huggingface_model()
 
     raise ValueError(f"Unknown provider: {provider}")

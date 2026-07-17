@@ -4,27 +4,7 @@ from datasets import Dataset
 
 from sklearn.model_selection import train_test_split
 
-
-SYSTEM_PROMPT = """
-You are an expert judge in the Turing Test.
-
-You will receive a conversation between an interrogator (I)
-and a witness (W).
-
-Your task is to determine whether the witness is HUMAN or AI
-and briefly justify your decision.
-
-Answer using exactly this format:
-
-Verdict: HUMAN
-Reason: ...
-
-or
-
-Verdict: AI
-Reason: ...
-""".strip()
-
+from judge_sys_prompt import SYSTEM_PROMPT
 
 def create_sample(prefix: str, is_human: bool, reason: str):
     answer = "HUMAN" if is_human else "AI"
@@ -70,18 +50,27 @@ def build_dataset():
 
     labels = df["is_human"].tolist()
 
-    train, test = train_test_split(
+    train_conversations, temp_conversations, train_labels, temp_labels = train_test_split(
         conversations,
+        labels,
         test_size=0.2,
         stratify=labels,
         random_state=42,
     )
 
-    train = [ sample for conversation in train for sample in conversation ]
+    val_conversations, test_conversations = train_test_split(
+        temp_conversations,
+        test_size=0.5,
+        stratify=temp_labels,
+        random_state=42,
+    )
 
-    test = [ sample for conversation in test for sample in conversation ]
+    train = [ sample for conversation in train_conversations for sample in conversation ]
+    test = [ sample for conversation in test_conversations for sample in conversation ]
+    val = [ sample for conversation in val_conversations for sample in conversation ]
 
     return (
         Dataset.from_list(train),
         Dataset.from_list(test),
+        Dataset.from_list(val)
     )

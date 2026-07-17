@@ -7,6 +7,16 @@ and a witness (W).
 Your task is to determine whether the witness is HUMAN or AI
 and briefly justify your decision.
 
-Here is the conversation: 
+Answer using exactly this format:
+
+Verdict: HUMAN
+Reason: ...
+
+or
+
+Verdict: AI
+Reason: ...
+
+Here is the conversation:
 {transcript}
 """

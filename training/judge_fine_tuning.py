@@ -56,7 +56,7 @@ model = get_peft_model(model, lora_config)
 model.print_trainable_parameters()
 print(f"Modelo carregado!\nDevice: {model.device}\nVRAM: {torch.cuda.memory_allocated()/1024**3:.2f} GB")
 
-train_dataset, eval_dataset = build_dataset()
+train_dataset, test_dataset, val_dataset = build_dataset()
 
 training_args = SFTConfig(
     output_dir="./models/qwen-turing-judge",
@@ -90,7 +90,7 @@ trainer = SFTTrainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    eval_dataset=eval_dataset,
+    eval_dataset=val_dataset,
     processing_class=tokenizer,
 )
 
