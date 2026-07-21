@@ -1,8 +1,9 @@
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
-from interfaces.gradio import start_gradio
+from interfaces.streamlit_app import start_streamlit
 from interfaces.rest_api.api import start_api
 from services.judgement_service import JudgmentService
 
@@ -28,8 +29,8 @@ def handle_test_ai(args):
     service = JudgmentService()
 
     result = service.run_benchmark(
-        n_conversations=100,
-        turns_per_conversation=6,
+        n_conversations=args.conversations,
+        turns_per_conversation=args.turns,
         output_file="resources/judgement.json"
     )
 
@@ -38,8 +39,12 @@ def handle_test_ai(args):
 def handle_console_chat(args):
     start_console()
 
-def handle_gradio_chat(args):
-    start_gradio()
+def handle_streamlit_chat(args):
+    script_path = Path(__file__).parent / "interfaces" / "streamlit_app.py"
+    subprocess.run(
+        [sys.executable, "-m", "streamlit", "run", str(script_path)],
+        check=True,
+    )
 
 def handle_rest_api(args):
     start_api()
@@ -74,10 +79,18 @@ def main():
     parser_chat = subparsers.add_parser("console-chat", help="Start a new conversation in the terminal")
     parser_chat.set_defaults(func=handle_console_chat)
 
-    parser_chat = subparsers.add_parser("gradio-chat", help="Start a new conversation in the gradio frontend")
-    parser_chat.set_defaults(func=handle_gradio_chat)
+    parser_chat = subparsers.add_parser("streamlit-chat", help="Start a new conversation in the streamlit frontend")
+    parser_chat.set_defaults(func=handle_streamlit_chat)
 
     parser_chat = subparsers.add_parser("test-ai", help="Use a judge agent to test the ai")
+    parser_chat.add_argument(
+        "-c", "--conversations", type=int, default=10, 
+        help="Amount of conversations to evaluate"
+    )
+    parser_chat.add_argument(
+        "-t", "--turns", type=int, default=6, 
+        help="Amount of turns per conversation"
+    )
     parser_chat.set_defaults(func=handle_test_ai)
 
     args = parser.parse_args()

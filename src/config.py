@@ -3,24 +3,20 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     groq_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"
-    HF_TOKEN: str | None = None
+    hf_token: str | None = None
 
-    provider_main_agent: str = "ollama"
-    provider_humanizer: str = "ollama"
+    provider_main_agent: str = "groq"
+    provider_humanizer: str = "groq"
     provider_persona_generator: str = "ollama"
-    provider_judge: str = "huggingface"
+    provider_judge: str = "ollama"
+    provider_judge_classifier: str = "huggingface"
     provider_interrogator: str = "ollama"
 
-    # model_main_agent: str = "llama-3.3-70b-versatile"
-    # model_humanizer: str = "llama-3.1-8b-instant"
-    # model_persona_generator: str = "llama-3.1-8b-instant"
-    # model_judge: str = "llama-3.3-70b-versatile"
-    # model_interrogator: str = "llama-3.3-70b-versatile"
-
-    model_main_agent: str = "llama3.1"  # ou o modelo que você baixou
-    model_humanizer: str = "llama3.1"
+    model_main_agent: str = "llama-3.3-70b-versatile"  
+    model_humanizer: str = "llama-3.1-8b-instant"
     model_persona_generator: str = "llama3.1"
-    model_judge: str = "qwen-turing-judge"
+    model_judge: str = "llama3.1"
+    model_judge_classifier: str = "qwen2.5-classifier"
     model_interrogator: str = "llama3.1"
 
     groq_api_key: str = ""
