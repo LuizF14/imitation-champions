@@ -28,22 +28,26 @@ This project is a companion to **[ImitationGame](#)** (still in development), an
 
 - 🗣️ **Human-Like Conversational Agent** — built with prompt engineering on top of LangChain to sound natural and human
 - 🎭 **Automatic Persona Generation** — uses AI to generate believable, consistent human personas
-- ⚖️ **Automated AI Judge** — automatically tests the main bot's believability, combining **fine-tuning + prompt engineering**
+- ⚖️ **Automated AI Judge** — combines a fine-tuned classifier with an LLM-generated reasoning step to evaluate how convincingly human the bot sounds
 - 🔌 **Configurable Providers & Models** — swap between **Groq, Ollama, and Hugging Face** with minimal config changes, running **Llama, Qwen, GPT, or Claude** models interchangeably
 - 🌐 **Multiple Interfaces**:
   - Console app
-  - Simple **Gradio** web frontend
+  - **Streamlit** web frontend
   - **REST API** (used to integrate directly with the ImitationGame project)
 
 ---
 
-## ⚖️ The Judge: A Fine-Tuned Detector
+## ⚖️ The Judge: A Fine-Tuned Classifier + LLM Reasoning
 
-Instead of relying purely on prompting a general-purpose LLM to detect AI-generated text, ImitationChampions fine-tunes **Qwen2.5-3B with LoRA adapters** directly on real human-subject data — the **OSF 3-party Turing Test dataset** — combined with prompt engineering, producing `qwen-turing-judge`: a lightweight, specialized classifier for human-vs-AI conversation detection.
+Instead of relying purely on prompting a general-purpose LLM to detect AI-generated text, ImitationChampions fine-tunes **Qwen2.5-3B with LoRA adapters** directly on real human-subject data — the **OSF 3-party Turing Test dataset** — producing `qwen-judge-classifier`: a lightweight sequence classifier (human vs. AI) built on top of `AutoModelForSequenceClassification`.
+
+The classifier alone reached **80.06% accuracy** on the OSF 3-party Turing Test dataset.
+
+The judge agent then combines the classifier's verdict with a second LLM call that generates a natural-language **reason** for the classification — so every verdict comes with both a label and an explanation of why the conversation read as human or AI.
 
 Using a dataset from actual Turing Test experiments (rather than purely synthetic data) means the judge learns from how real interrogators, witnesses, and AI participants actually behaved — not just plausible-looking conversations.
 
-The `notebooks/judges_comparison.ipynb` and `results/` directory contain a **head-to-head evaluation** of the vanilla Qwen2.5 model against the fine-tuned version, quantifying the accuracy gain from domain-specific fine-tuning.
+The `notebooks/judges_comparison.ipynb` and `results/` directory contain a **head-to-head evaluation** of the vanilla Qwen2.5 model against the fine-tuned classifier, quantifying the accuracy gain from domain-specific fine-tuning.
 
 ---
 
@@ -53,8 +57,8 @@ The `notebooks/judges_comparison.ipynb` and `results/` directory contain a **hea
 |---|---|
 | Agent orchestration | LangChain, LangGraph |
 | Inference | Groq (fast serving), Hugging Face, Ollama (local) |
-| Judge model | Qwen2.5-3B + LoRA (PEFT) fine-tuning |
-| Interfaces | Gradio, FastAPI-style REST API, CLI console |
+| Judge model | Qwen2.5-3B sequence classifier + LoRA (PEFT) fine-tuning |
+| Interfaces | Streamlit, FastAPI-style REST API, CLI console |
 
 ---
 
@@ -64,21 +68,20 @@ The `notebooks/judges_comparison.ipynb` and `results/` directory contain a **hea
 imitation-champions/
 ├── datasets/               # Turing Test training and evaluation dataset
 ├── models/
-│   └── qwen-turing-judge/  # Fine-tuned LoRA adapter for the judge model
+│   └── qwen-judge-classifier/  # Fine-tuned LoRA adapter for the judge classifier
 ├── notebooks/              # Judge comparison & evaluation notebooks
 ├── resources/              # Persona and judgement reference data
 ├── results/                # Judge evaluation results (base vs. fine-tuned)
 ├── scripts/                # Data rewriting / preprocessing utilities
 ├── src/
 │   ├── agents/             # Conversational, interrogator, judge & persona agents
-│   ├── interfaces/         # Console, Gradio, and REST API frontends
+│   ├── interfaces/         # Console, Streamlit, and REST API frontends
 │   ├── prompts/            # Prompt templates for each agent role
 │   ├── providers/          # Groq / Hugging Face / Ollama LLM providers
-│   ├── schemas/            # Pydantic schemas (conversation, persona, verdict)
+│   ├── schemas/             # Pydantic schemas (conversation, persona, verdict)
 │   ├── services/           # Business logic layer (conversation, judgement, persona)
 │   └── tools/              # Utility tools (e.g. datetime tools for agents)
 └── training/
-    ├── judge/               # Fine-tuning pipeline for the judge model
     └── judge_classifier/    # Classifier training experiments
 ```
 
@@ -113,7 +116,7 @@ python src/main.py <command> [options]
 |---|---|
 | `generate` | Generate new synthetic personas using AI |
 | `console-chat` | Start a conversation with the bot in the terminal |
-| `gradio-chat` | Launch the Gradio web frontend |
+| `streamlit-chat` | Launch the Streamlit web frontend |
 | `test-ai` | Run the AI judge against the bot in an automated benchmark |
 
 **Generate personas**
@@ -132,19 +135,22 @@ python src/main.py generate -n 5 -o resources/personas.json
 python src/main.py console-chat
 ```
 
-**Chat with the bot (Gradio web UI)**
+**Chat with the bot (Streamlit web UI)**
 
 ```bash
-python src/main.py gradio-chat
+python src/main.py streamlit-chat
 ```
 
 **Benchmark the bot with the AI judge**
 
 ```bash
-python src/main.py test-ai
+python src/main.py test-ai -c 10 -t 6
 ```
 
-Runs an automated benchmark (100 conversations × 6 turns by default) where the judge evaluates how convincingly human the bot sounds, and writes the results to `resources/judgement.json`.
+- `-c, --conversations` — number of conversations to evaluate (default: `10`)
+- `-t, --turns` — number of turns per conversation (default: `6`)
+
+Runs an automated benchmark where the judge evaluates how convincingly human the bot sounds, and writes the results to `resources/judgement.json`.
 
 ---
 
