@@ -100,9 +100,41 @@ source venv/bin/activate   # or venv\Scripts\activate on Windows
 
 pip install -r requirements.txt
 
-# Configure your provider API keys
+# Create your environment configuration
 cp .env.example .env
 ```
+
+### Configuration
+
+ImitationChampions uses **Pydantic Settings** to centralize all runtime configuration. Every agent in the framework can be assigned its own **LLM provider** and **model**, making it easy to experiment with heterogeneous multi-model architectures.
+
+A typical `.env` configuration looks like this:
+
+```env
+# API keys
+GROQ_API_KEY=...
+HF_TOKEN=...
+
+# Providers
+PROVIDER_MAIN_AGENT=groq
+PROVIDER_HUMANIZER=groq
+PROVIDER_PERSONA_GENERATOR=ollama
+PROVIDER_JUDGE=ollama
+PROVIDER_JUDGE_CLASSIFIER=huggingface
+PROVIDER_INTERROGATOR=ollama
+
+# Models
+MODEL_MAIN_AGENT=llama-3.3-70b-versatile
+MODEL_HUMANIZER=llama-3.1-8b-instant
+MODEL_PERSONA_GENERATOR=llama3.1
+MODEL_JUDGE=llama3.1
+MODEL_JUDGE_CLASSIFIER=qwen2.5-classifier
+MODEL_INTERROGATOR=llama3.1
+```
+
+Each agent retrieves its model through a unified provider abstraction. This means you can mix providers (Groq, Ollama, and Hugging Face) and models freely—for example, running the conversational agent on Groq while executing the judge locally with Ollama and the fine-tuned classifier through Hugging Face.
+
+Changing an agent's provider or model only requires updating the corresponding environment variable—no application code needs to be modified.
 
 ### Usage
 
