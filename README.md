@@ -20,7 +20,7 @@
 
 It's built around a core conversational agent (powered by prompt engineering on top of LangChain), a suite of tools to generate realistic personas, an automatic AI judge to evaluate how convincingly human the bot sounds, and multiple interfaces to interact with it.
 
-This project is a companion to **[ImitationGame](#)** (still in development), another project of mine — ImitationChampions exposes a REST API specifically so ImitationGame can talk to it directly.
+This project is a companion to **[ImitationGame](https://github.com/LuizF14/imitation-game)** (still in development), another project of mine — ImitationChampions exposes a REST API specifically so ImitationGame can talk to it directly.
 
 ---
 
